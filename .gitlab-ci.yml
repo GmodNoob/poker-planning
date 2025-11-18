@@ -23,7 +23,13 @@ cache:
 variables:
   PNPM_HOME: ".pnpm-store"
   CI: "true"
-  DOCKER_IMAGE: $CI_REGISTRY_IMAGE
+  # Scaleway Container Registry
+  SCW_REGISTRY: rg.fr-par.scw.cloud
+  SCW_NAMESPACE: poker-planning
+  DOCKER_IMAGE: $SCW_REGISTRY/$SCW_NAMESPACE/poker-planning
+  # Scaleway Serverless Container
+  SCW_REGION: fr-par
+  SCW_CONTAINER_NAMESPACE_ID: ${SCW_CONTAINER_NAMESPACE_ID}
   # Override team members via env var (comma-separated)
   # VITE_TEAM_MEMBERS: "Alice,Bob,Charlie"
 
@@ -61,6 +67,7 @@ lint:
     - corepack prepare pnpm@10.17.0 --activate
   script:
     - pnpm exec tsc --noEmit
+    - pnpm lint
   allow_failure: false
   only:
     - branches
@@ -133,7 +140,7 @@ build:
     - tags
     - merge_requests
 
-# Job: Build Docker image
+# Job: Build and push Docker image to Scaleway Registry
 docker:build:
   stage: docker
   needs: [build, test:e2e]
@@ -146,14 +153,13 @@ docker:build:
     DOCKER_TLS_VERIFY: 1
     DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker login $SCW_REGISTRY -u nologin --password-stdin <<< "$SCW_SECRET_KEY"
   script:
     - docker build --target production -t $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA -t $DOCKER_IMAGE:latest .
     - docker push $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA
     - docker push $DOCKER_IMAGE:latest
   only:
     - main
-    - tags
 
 # Job: Build Docker image for tags (with version)
 docker:build:tag:
@@ -168,71 +174,51 @@ docker:build:tag:
     DOCKER_TLS_VERIFY: 1
     DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker login $SCW_REGISTRY -u nologin --password-stdin <<< "$SCW_SECRET_KEY"
   script:
     - docker build --target production -t $DOCKER_IMAGE:$CI_COMMIT_TAG .
     - docker push $DOCKER_IMAGE:$CI_COMMIT_TAG
   only:
     - tags
 
-# Job: Deploy Preview for MRs
-deploy:preview:
-  stage: deploy
-  needs: [build]
-  before_script:
-    - echo "Deploying preview environment"
-  script:
-    - echo "Preview URL would be available here"
-    - echo "This is where you would deploy to a preview environment"
-  environment:
-    name: preview/mr-$CI_MERGE_REQUEST_IID
-    url: https://preview-$CI_MERGE_REQUEST_IID.example.com
-    on_stop: stop:preview
-    auto_stop_in: 1 week
-  only:
-    - merge_requests
-  when: manual
-
-# Job: Stop preview environment
-stop:preview:
-  stage: deploy
-  before_script:
-    - echo "Stopping preview environment"
-  script:
-    - echo "Cleanup preview deployment"
-  environment:
-    name: preview/mr-$CI_MERGE_REQUEST_IID
-    action: stop
-  only:
-    - merge_requests
-  when: manual
-
-# Job: Deploy to staging
+# Job: Deploy to Scaleway Serverless Container (staging)
 deploy:staging:
   stage: deploy
   needs: [docker:build]
+  image: docker.internal.scaleway.com/scaleway/cli:latest
   before_script:
-    - echo "Deploying to staging"
+    - scw init secret-key=$SCW_SECRET_KEY access-key=$SCW_ACCESS_KEY project-id=$SCW_PROJECT_ID region=$SCW_REGION send-telemetry=false install-autocomplete=false
   script:
-    - echo "Deploy Docker image $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA to staging"
+    - |
+      scw container container update \
+        $SCW_STAGING_CONTAINER_ID \
+        region=$SCW_REGION \
+        registry-image=$DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA \
+        redeploy=true
   environment:
     name: staging
-    url: https://staging.example.com
+    url: $SCW_STAGING_URL
   only:
     - main
   when: manual
 
-# Job: Deploy to production
+# Job: Deploy to Scaleway Serverless Container (production)
 deploy:production:
   stage: deploy
   needs: [docker:build:tag]
+  image: docker.internal.scaleway.com/scaleway/cli:latest
   before_script:
-    - echo "Deploying to production"
+    - scw init secret-key=$SCW_SECRET_KEY access-key=$SCW_ACCESS_KEY project-id=$SCW_PROJECT_ID region=$SCW_REGION send-telemetry=false install-autocomplete=false
   script:
-    - echo "Deploy Docker image $DOCKER_IMAGE:$CI_COMMIT_TAG to production"
+    - |
+      scw container container update \
+        $SCW_PRODUCTION_CONTAINER_ID \
+        region=$SCW_REGION \
+        registry-image=$DOCKER_IMAGE:$CI_COMMIT_TAG \
+        redeploy=true
   environment:
     name: production
-    url: https://poker-planning.example.com
+    url: $SCW_PRODUCTION_URL
   only:
     - tags
   when: manual

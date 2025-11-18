@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test } from '@playwright/test'
 import { PlanningPage } from './helpers/planning-page'
 
 test.describe('Poker Planning Session - Multi-User', () => {
