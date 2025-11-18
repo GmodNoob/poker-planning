@@ -18,6 +18,9 @@ COPY . .
 # Build the frontend application
 RUN pnpm run build
 
+# Build the server TypeScript to JavaScript
+RUN pnpm exec tsc server/index.ts --outDir server-dist --module ESNext --moduleResolution bundler --target ES2022 --esModuleInterop --skipLibCheck
+
 # Production stage - Node.js server serving both API and static files
 FROM docker.internal.scaleway.com/node:22.16.0-alpine AS production
 
@@ -32,8 +35,8 @@ COPY package.json pnpm-lock.yaml ./
 # Install production dependencies only
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy server code
-COPY server ./server
+# Copy compiled server code
+COPY --from=builder /app/server-dist ./server
 COPY team.config.json ./
 
 # Copy built frontend from builder stage
@@ -43,4 +46,4 @@ COPY --from=builder /app/dist ./dist
 EXPOSE 3001
 
 # Start the server
-CMD ["node", "--import", "tsx", "server/index.ts"]
+CMD ["node", "server/index.js"]
