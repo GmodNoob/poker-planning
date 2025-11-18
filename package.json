@@ -1,0 +1,44 @@
+{
+  "name": "poc-er-planning",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "- React app with tailwind shadcn tanstack - With a simple configuration file to define team composition - Database (SQlite) - Use to estimate task for a team based on fibonacci suite",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "dev:server": "tsx server/index.ts",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:report": "playwright show-report"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@tailwindcss/postcss": "^4.1.17",
+    "@types/better-sqlite3": "7.6.13",
+    "@types/react": "19.2.6",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "5.1.1",
+    "autoprefixer": "10.4.22",
+    "postcss": "8.5.6",
+    "tailwindcss": "4.1.17",
+    "tsx": "^4.20.6",
+    "typescript": "5.9.3",
+    "vite": "7.2.2"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.6",
+    "@tanstack/react-query": "5.90.10",
+    "@tanstack/react-router": "1.136.8",
+    "@tanstack/react-table": "8.21.3",
+    "better-sqlite3": "12.4.1",
+    "hono": "^4.10.6",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  }
+}

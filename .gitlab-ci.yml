@@ -1,0 +1,230 @@
+# GitLab CI/CD Configuration for Poker Planning
+
+image: node:22-alpine
+
+# Définition des stages du pipeline
+stages:
+  - install
+  - lint
+  - test
+  - build
+  - deploy
+
+# Cache global pour accélérer les builds
+cache:
+  key:
+    files:
+      - pnpm-lock.yaml
+  paths:
+    - .pnpm-store
+    - node_modules/
+
+# Variables globales
+variables:
+  PNPM_HOME: ".pnpm-store"
+  CI: "true"
+
+# Job: Installation des dépendances
+install:
+  stage: install
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@latest --activate
+    - pnpm config set store-dir .pnpm-store
+  script:
+    - pnpm install --frozen-lockfile
+  artifacts:
+    paths:
+      - node_modules/
+      - .pnpm-store/
+    expire_in: 1 hour
+  only:
+    - branches
+    - tags
+    - merge_requests
+
+# Job: Linting et vérification du code
+lint:
+  stage: lint
+  needs: [install]
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@latest --activate
+  script:
+    - pnpm exec tsc --noEmit
+  allow_failure: false
+  only:
+    - branches
+    - tags
+    - merge_requests
+
+# Job: Tests E2E avec Playwright
+test:e2e:
+  stage: test
+  needs: [install]
+  image: mcr.microsoft.com/playwright:v1.56.1-noble
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@latest --activate
+    - pnpm config set store-dir .pnpm-store
+  script:
+    # Installer les dépendances si nécessaire
+    - pnpm install --frozen-lockfile
+
+    # Lancer le serveur SSE en arrière-plan
+    - pnpm run dev:server &
+    - SERVER_PID=$!
+
+    # Lancer Vite en arrière-plan
+    - pnpm run dev &
+    - VITE_PID=$!
+
+    # Attendre que les serveurs démarrent
+    - sleep 10
+
+    # Vérifier que les serveurs sont en cours d'exécution
+    - wget --spider --tries=30 --retry-connrefused http://localhost:3001/state || exit 1
+    - wget --spider --tries=30 --retry-connrefused http://localhost:5173 || exit 1
+
+    # Lancer les tests
+    - pnpm test
+
+    # Arrêter les serveurs
+    - kill $SERVER_PID $VITE_PID || true
+  artifacts:
+    when: always
+    paths:
+      - playwright-report/
+      - test-results/
+    reports:
+      junit: test-results/junit.xml
+    expire_in: 30 days
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  only:
+    - branches
+    - tags
+    - merge_requests
+
+# Job: Build de production
+build:
+  stage: build
+  needs: [install, lint]
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@latest --activate
+    - pnpm config set store-dir .pnpm-store
+  script:
+    - pnpm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+  only:
+    - main
+    - tags
+    - merge_requests
+
+# Job: Deploy Preview pour les MR
+deploy:preview:
+  stage: deploy
+  needs: [build]
+  before_script:
+    - echo "Deploying preview environment"
+  script:
+    - echo "Preview URL would be available here"
+    - echo "This is where you would deploy to a preview environment"
+    # Exemple avec Netlify, Vercel, etc:
+    # - npx netlify-cli deploy --dir=dist --alias=mr-$CI_MERGE_REQUEST_IID
+  environment:
+    name: preview/mr-$CI_MERGE_REQUEST_IID
+    url: https://preview-$CI_MERGE_REQUEST_IID.example.com
+    on_stop: stop:preview
+    auto_stop_in: 1 week
+  only:
+    - merge_requests
+  when: manual
+
+# Job: Stop preview environment
+stop:preview:
+  stage: deploy
+  before_script:
+    - echo "Stopping preview environment"
+  script:
+    - echo "Cleanup preview deployment"
+  environment:
+    name: preview/mr-$CI_MERGE_REQUEST_IID
+    action: stop
+  only:
+    - merge_requests
+  when: manual
+
+# Job: Deploy en staging
+deploy:staging:
+  stage: deploy
+  needs: [build, test:e2e]
+  before_script:
+    - echo "Deploying to staging"
+  script:
+    - echo "Deploy frontend to staging server"
+    - echo "Deploy SSE server to staging"
+    # Exemple:
+    # - rsync -avz dist/ user@staging-server:/var/www/poker-planning/
+    # - ssh user@staging-server "pm2 restart poker-planning-server"
+  environment:
+    name: staging
+    url: https://staging.example.com
+  only:
+    - main
+  when: manual
+
+# Job: Deploy en production
+deploy:production:
+  stage: deploy
+  needs: [build, test:e2e]
+  before_script:
+    - echo "Deploying to production"
+  script:
+    - echo "Deploy frontend to production server"
+    - echo "Deploy SSE server to production"
+    # Exemple:
+    # - rsync -avz dist/ user@prod-server:/var/www/poker-planning/
+    # - ssh user@prod-server "pm2 restart poker-planning-server"
+  environment:
+    name: production
+    url: https://poker-planning.example.com
+  only:
+    - tags
+  when: manual
+
+# Job: Security audit
+security:audit:
+  stage: test
+  needs: [install]
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@latest --activate
+  script:
+    - pnpm audit --audit-level=moderate
+  allow_failure: true
+  only:
+    - schedules
+    - main
+    - merge_requests
+
+# Job: Dependency update check
+dependency:check:
+  stage: test
+  needs: [install]
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@latest --activate
+  script:
+    - pnpm outdated || true
+  artifacts:
+    reports:
+      dependency_scanning: gl-dependency-scanning-report.json
+    expire_in: 7 days
+  allow_failure: true
+  only:
+    - schedules
+    - main

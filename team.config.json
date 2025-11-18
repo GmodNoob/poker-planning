@@ -1,0 +1,38 @@
+{
+  "team": {
+    "name": "Équipe Dev",
+    "members": [
+      {
+        "id": "1",
+        "name": "Aymar",
+        "role": "Developer"
+      },
+      {
+        "id": "2",
+        "name": "Rachid",
+        "role": "Tech Lead"
+      },
+      {
+        "id": "3",
+        "name": "Dalila",
+        "role": "Developer"
+      },
+      {
+        "id": "4",
+        "name": "Lisa",
+        "role": "Product Owner"
+      },
+      {
+        "id": "4",
+        "name": "Numa",
+        "role": "Product Owner"
+      },
+      {
+        "id": "4",
+        "name": "Antoine",
+        "role": "Product Owner"
+      }
+    ],
+    "currentUserId": "1"
+  }
+}
