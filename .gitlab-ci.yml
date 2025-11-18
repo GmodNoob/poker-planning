@@ -151,7 +151,7 @@ docker:build:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
   before_script:
-    - echo "$SCW_SECRET_KEY" | docker login $SCW_REGISTRY -u nologin --password-stdin
+    - docker login $SCW_REGISTRY --username nologin --password $SCW_SECRET_KEY
   script:
     - docker build --target production -t $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA -t $DOCKER_IMAGE:latest .
     - docker push $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA
