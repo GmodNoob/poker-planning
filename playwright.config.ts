@@ -2,10 +2,10 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests',
-  fullyParallel: false, // Désactivé pour les tests multi-utilisateurs
+  fullyParallel: false, // Disabled for multi-user tests
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: 1, // Un seul worker pour éviter les conflits d'état
+  workers: 1, // Single worker to avoid state conflicts
   reporter: process.env.CI
     ? [
         ['html'],

@@ -3,49 +3,49 @@ import { Page, expect } from '@playwright/test'
 export class PlanningPage {
   constructor(private page: Page) {}
 
-  // Sélectionner un utilisateur
+  // Select a user
   async selectUser(userName: string) {
     await this.page.getByRole('button', { name: userName }).click()
-    await expect(this.page.getByText('Choisissez votre estimation')).toBeVisible()
+    await expect(this.page.getByText('Choose your estimate')).toBeVisible()
   }
 
-  // Voter avec une valeur spécifique
+  // Vote with a specific value
   async vote(value: string | number) {
     const cardButton = this.page.getByLabel(value.toString(), { exact: true })
     await cardButton.click()
 
-    // Attendre que la carte soit sélectionnée (optionnel, peut causer des timeouts)
+    // Wait for the card to be selected (optional, may cause timeouts)
     await this.page.waitForTimeout(300)
   }
 
-  // Vérifier qu'un participant a voté
+  // Verify that a participant has voted
   async expectParticipantVoted(userName: string) {
     const participantCard = this.page.locator(`div:has-text("${userName}")`).first()
     await expect(participantCard).toContainText('✓')
   }
 
-  // Vérifier qu'un participant n'a pas voté
+  // Verify that a participant has not voted
   async expectParticipantNotVoted(userName: string) {
     const participantCard = this.page.locator(`div:has-text("${userName}")`).first()
     await expect(participantCard).toContainText('?')
   }
 
-  // Révéler les votes
+  // Reveal the votes
   async revealVotes() {
-    await this.page.getByRole('button', { name: /Révéler les votes/ }).click()
+    await this.page.getByRole('button', { name: /Reveal votes/ }).click()
   }
 
-  // Vérifier le résultat d'un vote révélé
+  // Verify the result of a revealed vote
   async expectRevealedVote(userName: string, value: string | number) {
     const participantCard = this.page.locator(`div:has-text("${userName}")`).first()
     await expect(participantCard).toContainText(value.toString())
   }
 
-  // Vérifier les statistiques
+  // Verify the statistics
   async expectStatistics(average: string, mode: string, votes: string) {
-    await expect(this.page.getByText('Résultats')).toBeVisible()
+    await expect(this.page.getByText('Results')).toBeVisible()
 
-    const avgSection = this.page.locator('div:has-text("Moyenne")').first()
+    const avgSection = this.page.locator('div:has-text("Average")').first()
     await expect(avgSection).toContainText(average)
 
     const modeSection = this.page.locator('div:has-text("Mode")').first()
@@ -55,18 +55,18 @@ export class PlanningPage {
     await expect(votesSection).toContainText(votes)
   }
 
-  // Nouvelle estimation
+  // New estimate
   async resetSession() {
-    await this.page.getByRole('button', { name: 'Nouvelle estimation' }).click()
-    await expect(this.page.getByText('Choisissez votre estimation')).toBeVisible()
+    await this.page.getByRole('button', { name: 'New estimate' }).click()
+    await expect(this.page.getByText('Choose your estimate')).toBeVisible()
   }
 
-  // Vérifier le nombre de votes
+  // Verify the vote count
   async expectVoteCount(voted: number, total: number) {
     await expect(this.page.getByText(`Participants (${voted}/${total})`)).toBeVisible()
   }
 
-  // Attendre la synchronisation SSE
+  // Wait for SSE synchronization
   async waitForSync(timeoutMs: number = 1000) {
     await this.page.waitForTimeout(timeoutMs)
   }
