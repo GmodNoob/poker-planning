@@ -153,7 +153,7 @@ docker:build:
     DOCKER_TLS_VERIFY: 1
     DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
   before_script:
-    - docker login $SCW_REGISTRY -u nologin --password-stdin <<< "$SCW_SECRET_KEY"
+    - echo "$SCW_SECRET_KEY" | docker login $SCW_REGISTRY -u nologin --password-stdin
   script:
     - docker build --target production -t $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA -t $DOCKER_IMAGE:latest .
     - docker push $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA
@@ -174,7 +174,7 @@ docker:build:tag:
     DOCKER_TLS_VERIFY: 1
     DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
   before_script:
-    - docker login $SCW_REGISTRY -u nologin --password-stdin <<< "$SCW_SECRET_KEY"
+    - echo "$SCW_SECRET_KEY" | docker login $SCW_REGISTRY -u nologin --password-stdin
   script:
     - docker build --target production -t $DOCKER_IMAGE:$CI_COMMIT_TAG .
     - docker push $DOCKER_IMAGE:$CI_COMMIT_TAG
