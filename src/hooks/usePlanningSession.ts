@@ -12,7 +12,8 @@ interface SessionState {
   showResults: boolean
 }
 
-const API_URL = 'http://localhost:3001'
+// In production, API is served from same origin. In dev, use port 3001
+const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : ''
 
 export function usePlanningSession() {
   const [votes, setVotes] = useState<Vote[]>([])

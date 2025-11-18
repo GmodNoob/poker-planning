@@ -1,7 +1,9 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { streamSSE } from 'hono/streaming'
+import { serveStatic } from '@hono/node-server/serve-static'
 import { serve } from '@hono/node-server'
+import { existsSync } from 'fs'
 
 interface Vote {
   userId: string
@@ -138,7 +140,19 @@ app.get('/state', (c) => {
   return c.json(sessionState)
 })
 
-const port = 3001
+// Serve static files in production (when dist folder exists)
+const distPath = './dist'
+if (existsSync(distPath)) {
+  // Serve static assets
+  app.use('/*', serveStatic({ root: distPath }))
+
+  // SPA fallback - serve index.html for all non-API routes
+  app.get('*', serveStatic({ root: distPath, path: 'index.html' }))
+
+  console.log('📦 Serving static files from dist/')
+}
+
+const port = process.env.PORT ? parseInt(process.env.PORT) : 3001
 console.log(`🚀 Server is running on http://localhost:${port}`)
 
 serve({

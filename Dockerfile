@@ -15,24 +15,11 @@ RUN pnpm install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Build the application
+# Build the frontend application
 RUN pnpm run build
 
-# Production stage - serve static files with nginx
-FROM docker.internal.scaleway.com/nginx:alpine AS production
-
-# Copy built assets
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
-
-# Server stage - for SSE server
-FROM docker.internal.scaleway.com/node:22.16.0-alpine AS server
+# Production stage - Node.js server serving both API and static files
+FROM docker.internal.scaleway.com/node:22.16.0-alpine AS production
 
 WORKDIR /app
 
@@ -49,6 +36,11 @@ RUN pnpm install --frozen-lockfile --prod
 COPY server ./server
 COPY team.config.json ./
 
+# Copy built frontend from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Expose port (default 3001, can be overridden with PORT env var)
 EXPOSE 3001
 
+# Start the server
 CMD ["node", "--import", "tsx", "server/index.ts"]
