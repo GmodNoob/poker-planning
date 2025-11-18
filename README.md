@@ -1,193 +1,197 @@
 # Poker Planning
 
-Application web de poker planning collaboratif pour l'estimation agile en équipe utilisant la suite de Fibonacci.
+Collaborative poker planning web application for agile team estimation using the Fibonacci sequence.
 
-## 🎯 Fonctionnalités
+## Features
 
-- **Session de planning en temps réel** avec synchronisation SSE (Server-Sent Events)
-- **Votes anonymes** jusqu'à la révélation collective
-- **Suite de Fibonacci** pour l'estimation (0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, ?)
-- **Statistiques automatiques** (moyenne, mode, nombre de votes)
-- **Configuration d'équipe** via fichier JSON
-- **Interface moderne** avec animations et effets visuels
-- **Multi-utilisateurs** - plusieurs personnes peuvent voter simultanément
+- **Real-time planning session** with SSE (Server-Sent Events) synchronization
+- **Anonymous votes** until collective reveal
+- **Fibonacci sequence** for estimation (0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, ?)
+- **Automatic statistics** (average, mode, vote count)
+- **Team configuration** via JSON file or environment variable
+- **Modern interface** with animations and visual effects
+- **Multi-user** - multiple people can vote simultaneously
 
-## 🛠️ Stack Technique
+## Tech Stack
 
 ### Frontend
-- **React 19** avec TypeScript
-- **Vite 7** pour le build et le dev server
-- **Tailwind CSS 4** pour le styling
+- **React 19** with TypeScript
+- **Vite 7** for build and dev server
+- **Tailwind CSS 4** for styling
 - **TanStack** (Query, Router, Table)
 
 ### Backend
-- **Hono** - Framework web léger pour le serveur SSE
-- **Server-Sent Events** pour la synchronisation temps réel
-- **Node.js** avec TypeScript
+- **Hono** - Lightweight web framework for SSE server
+- **Server-Sent Events** for real-time synchronization
+- **Node.js** with TypeScript
 
 ### Tests
-- **Playwright** pour les tests end-to-end multi-utilisateurs
+- **Playwright** for multi-user end-to-end tests
 
-## 🚀 Démarrage rapide
+### Linting
+- **oxlint** for fast JavaScript/TypeScript linting
 
-### Prérequis
+## Quick Start
 
-- Node.js 18+
-- pnpm 8+
+### Prerequisites
+
+- Node.js 22+
+- pnpm 10+
 
 ### Installation
 
 ```bash
-# Cloner le repository
+# Clone the repository
 git clone <url>
 cd poc-er-planning
 
-# Installer les dépendances
+# Install dependencies
 pnpm install
 
-# Installer les navigateurs Playwright (pour les tests)
+# Install Playwright browsers (for tests)
 pnpm exec playwright install chromium
 ```
 
-### Lancement en développement
+### Development
 
-L'application nécessite 2 serveurs en parallèle:
+The application requires 2 servers running in parallel:
 
 ```bash
-# Terminal 1 - Serveur SSE
+# Terminal 1 - SSE server
 pnpm run dev:server
 
-# Terminal 2 - Frontend Vite
+# Terminal 2 - Vite frontend
 pnpm run dev
 ```
 
-Puis ouvrir plusieurs navigateurs/onglets sur:
+Then open multiple browsers/tabs at:
 - **Frontend**: http://localhost:5173
-- **API SSE**: http://localhost:3001
+- **SSE API**: http://localhost:3001
 
-### Configuration de l'équipe
+### Team Configuration
 
-Éditez le fichier `team.config.json` pour définir les membres de votre équipe:
+Edit the `team.config.json` file to define your team members:
 
 ```json
-{
-  "team": {
-    "name": "Équipe Dev",
-    "members": [
-      {
-        "id": "1",
-        "name": "John Doe",
-        "role": "Developer"
-      },
-      {
-        "id": "2",
-        "name": "Jane Smith",
-        "role": "Tech Lead"
-      }
-    ],
-    "currentUserId": "1"
-  }
-}
+["Alice", "Bob", "Charlie", "Diana"]
 ```
 
-## 🧪 Tests
+You can also override the team via environment variable:
 
 ```bash
-# Lancer tous les tests
+VITE_TEAM_MEMBERS="Alice,Bob,Charlie" pnpm run dev
+```
+
+## Tests
+
+```bash
+# Run all tests
 pnpm test
 
-# Mode interactif avec UI
+# Interactive mode with UI
 pnpm test:ui
 
-# Avec navigateur visible
+# With visible browser
 pnpm test:headed
 
-# Voir le rapport HTML
+# View HTML report
 pnpm test:report
 ```
 
-Les tests simulent des sessions complètes avec plusieurs utilisateurs votant simultanément et vérifient la synchronisation en temps réel.
+Tests simulate complete sessions with multiple users voting simultaneously and verify real-time synchronization.
 
-## 📁 Structure du projet
+## Linting
+
+```bash
+# Run linter
+pnpm lint
+
+# Fix auto-fixable issues
+pnpm format
+```
+
+## Project Structure
 
 ```
 poc-er-planning/
-├── server/              # Serveur SSE Hono
-│   └── index.ts        # API endpoints et gestion SSE
+├── server/              # Hono SSE server
+│   └── index.ts        # API endpoints and SSE handling
 ├── src/
-│   ├── components/     # Composants React
+│   ├── components/     # React components
 │   │   ├── PlanningSession.tsx
 │   │   └── PlanningCard.tsx
 │   ├── hooks/          # Custom hooks
 │   │   └── usePlanningSession.ts
-│   ├── lib/            # Utilitaires
+│   ├── lib/            # Utilities
 │   │   └── teamConfig.ts
-│   ├── types/          # Types TypeScript
+│   ├── types/          # TypeScript types
 │   │   └── team.ts
 │   ├── App.tsx
 │   ├── main.tsx
 │   └── index.css
-├── tests/              # Tests Playwright
+├── tests/              # Playwright tests
 │   ├── helpers/
 │   │   └── planning-page.ts
 │   └── planning-session.spec.ts
-├── team.config.json    # Configuration d'équipe
+├── team.config.json    # Team configuration
 └── playwright.config.ts
 ```
 
-## 🔄 Flux d'utilisation
+## Usage Flow
 
-1. **Sélection d'utilisateur**: Chaque membre ouvre l'app et sélectionne son nom
-2. **Vote**: Chaque membre clique sur une carte Fibonacci pour voter
-3. **Synchronisation**: Les votes sont synchronisés en temps réel via SSE
-4. **Révélation**: N'importe qui peut révéler les votes (même si tous n'ont pas voté)
-5. **Statistiques**: Affichage automatique de la moyenne, mode et nombre de votes
-6. **Nouvelle estimation**: Reset de la session pour une nouvelle tâche
+1. **User selection**: Each member opens the app and selects their name
+2. **Voting**: Each member clicks a Fibonacci card to vote
+3. **Synchronization**: Votes are synchronized in real-time via SSE
+4. **Reveal**: Anyone can reveal votes (even if not everyone has voted)
+5. **Statistics**: Automatic display of average, mode, and vote count
+6. **New estimation**: Reset the session for a new task
 
-## 🏗️ Architecture SSE
+## SSE Architecture
 
-Le système utilise Server-Sent Events pour la synchronisation:
+The system uses Server-Sent Events for synchronization:
 
-- **Serveur Hono** maintient l'état partagé en mémoire
-- **Broadcast** automatique à tous les clients connectés
-- **Reconnexion automatique** en cas de perte de connexion
-- **Ping régulier** pour maintenir la connexion active
+- **Hono server** maintains shared state in memory
+- **Automatic broadcast** to all connected clients
+- **Automatic reconnection** on connection loss
+- **Regular ping** to keep connection alive
 
-### Endpoints API
+### API Endpoints
 
-- `GET /events` - Connexion SSE pour les mises à jour
-- `POST /vote` - Enregistrer un vote
-- `POST /init-votes` - Initialiser les votes pour un utilisateur
-- `POST /reveal` - Révéler tous les votes
-- `POST /reset` - Réinitialiser la session
-- `GET /state` - Obtenir l'état actuel
+- `GET /events` - SSE connection for updates
+- `POST /vote` - Record a vote
+- `POST /init-votes` - Initialize votes for a user
+- `POST /reveal` - Reveal all votes
+- `POST /reset` - Reset the session
+- `GET /state` - Get current state
 
-## 🎨 Design
+## Design
 
-L'interface utilise:
-- Fond dégradé violet/rose/ardoise
-- Effets de verre dépoli (backdrop blur)
-- Animations fluides avec Tailwind
-- Cartes de poker interactives avec effets au survol
-- Design responsive
+The interface uses:
+- Purple/pink/slate gradient background
+- Frosted glass effects (backdrop blur)
+- Smooth animations with Tailwind
+- Interactive poker cards with hover effects
+- Responsive design
 
-## 📝 Scripts disponibles
+## Available Scripts
 
 ```bash
-pnpm run dev          # Lance Vite dev server
-pnpm run dev:server   # Lance le serveur SSE
-pnpm run build        # Build production
-pnpm run preview      # Preview du build
-pnpm test            # Lance les tests Playwright
-pnpm test:ui         # Tests en mode UI interactif
-pnpm test:headed     # Tests avec navigateur visible
-pnpm test:report     # Affiche le rapport de tests
+pnpm run dev          # Start Vite dev server
+pnpm run dev:server   # Start SSE server
+pnpm run build        # Production build
+pnpm run preview      # Preview build
+pnpm lint            # Run linter
+pnpm format          # Fix linting issues
+pnpm test            # Run Playwright tests
+pnpm test:ui         # Tests in interactive UI mode
+pnpm test:headed     # Tests with visible browser
+pnpm test:report     # Show test report
 ```
 
-## 🤝 Contribution
+## Contributing
 
-Voir [CONTRIBUTING.md](./CONTRIBUTING.md) pour les guidelines de contribution.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines.
 
-## 📄 Licence
+## License
 
 ISC

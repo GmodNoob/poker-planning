@@ -1,60 +1,60 @@
-# Guide de Contribution
+# Contributing Guide
 
-Merci de votre intérêt pour contribuer à Poker Planning! Ce document décrit les processus et conventions pour contribuer au projet.
+Thank you for your interest in contributing to Poker Planning! This document describes the processes and conventions for contributing to the project.
 
-## 🌟 Comment contribuer
+## How to Contribute
 
-### Signaler un bug
+### Reporting a Bug
 
-1. Vérifiez que le bug n'a pas déjà été signalé dans les Issues
-2. Créez une nouvelle Issue avec:
-   - Un titre descriptif
-   - Les étapes pour reproduire le bug
-   - Le comportement attendu vs le comportement observé
-   - Votre environnement (OS, Node version, navigateur)
-   - Des screenshots si applicable
+1. Check that the bug hasn't already been reported in Issues
+2. Create a new Issue with:
+   - A descriptive title
+   - Steps to reproduce the bug
+   - Expected behavior vs observed behavior
+   - Your environment (OS, Node version, browser)
+   - Screenshots if applicable
 
-### Proposer une fonctionnalité
+### Proposing a Feature
 
-1. Ouvrez une Issue pour discuter de la fonctionnalité
-2. Décrivez le cas d'usage et les bénéfices
-3. Attendez les retours avant de commencer le développement
+1. Open an Issue to discuss the feature
+2. Describe the use case and benefits
+3. Wait for feedback before starting development
 
-### Soumettre du code
+### Submitting Code
 
-1. Forkez le repository
-2. Créez une branche depuis `main`:
+1. Fork the repository
+2. Create a branch from `main`:
    ```bash
-   git checkout -b feature/ma-fonctionnalite
-   # ou
-   git checkout -b fix/mon-correctif
+   git checkout -b feature/my-feature
+   # or
+   git checkout -b fix/my-fix
    ```
-3. Faites vos modifications
-4. Testez vos changements
-5. Committez avec des messages clairs
-6. Poussez vers votre fork
-7. Ouvrez une Pull Request
+3. Make your changes
+4. Test your changes
+5. Commit with clear messages
+6. Push to your fork
+7. Open a Pull Request
 
-## 🏗️ Setup de développement
+## Development Setup
 
 ### Installation
 
 ```bash
-# Cloner votre fork
-git clone https://github.com/VOTRE-USERNAME/poc-er-planning.git
+# Clone your fork
+git clone https://github.com/YOUR-USERNAME/poc-er-planning.git
 cd poc-er-planning
 
-# Installer les dépendances
+# Install dependencies
 pnpm install
 
-# Installer Playwright
+# Install Playwright
 pnpm exec playwright install chromium
 ```
 
-### Lancement
+### Running
 
 ```bash
-# Terminal 1 - Serveur SSE
+# Terminal 1 - SSE server
 pnpm run dev:server
 
 # Terminal 2 - Frontend
@@ -63,77 +63,89 @@ pnpm run dev
 
 ### Tests
 
-Avant de soumettre du code, assurez-vous que tous les tests passent:
+Before submitting code, make sure all tests pass:
 
 ```bash
-# Lancer tous les tests
+# Run all tests
 pnpm test
 
-# Tests avec UI pour debug
+# Tests with UI for debugging
 pnpm test:ui
 ```
 
-## 📝 Conventions de code
+### Linting
+
+Before submitting code, make sure linting passes:
+
+```bash
+# Run linter
+pnpm lint
+
+# Auto-fix issues
+pnpm format
+```
+
+## Code Conventions
 
 ### TypeScript
 
-- Utilisez TypeScript strict
-- Définissez des types explicites pour les interfaces publiques
-- Évitez `any`, préférez `unknown` si nécessaire
-- Utilisez des noms descriptifs pour les variables et fonctions
+- Use strict TypeScript
+- Define explicit types for public interfaces
+- Avoid `any`, prefer `unknown` if necessary
+- Use descriptive names for variables and functions
 
 ### React
 
-- Composants fonctionnels avec hooks uniquement
-- Utilisez `useMemo` et `useCallback` judicieusement pour la performance
-- Props typées avec des interfaces
-- Pas de composants inline dans le JSX
+- Functional components with hooks only
+- Use `useMemo` and `useCallback` judiciously for performance
+- Typed props with interfaces
+- No inline components in JSX
 
 ### Styling
 
-- Tailwind CSS uniquement (pas de CSS custom sauf nécessaire)
-- Classes utilitaires dans l'ordre: layout → spacing → colors → effects
-- Utilisez les variantes responsive: `sm:`, `md:`, `lg:`
-- Extrayez les patterns répétitifs en composants
+- Tailwind CSS only (no custom CSS unless necessary)
+- Utility classes in order: layout → spacing → colors → effects
+- Use responsive variants: `sm:`, `md:`, `lg:`
+- Extract repeated patterns into components
 
-### Nommage
+### Naming
 
-**Fichiers:**
-- Composants: `PascalCase.tsx` (ex: `PlanningCard.tsx`)
-- Hooks: `camelCase.ts` avec préfixe `use` (ex: `usePlanningSession.ts`)
-- Utilitaires: `camelCase.ts` (ex: `teamConfig.ts`)
-- Types: `camelCase.ts` (ex: `team.ts`)
+**Files:**
+- Components: `PascalCase.tsx` (e.g., `PlanningCard.tsx`)
+- Hooks: `camelCase.ts` with `use` prefix (e.g., `usePlanningSession.ts`)
+- Utilities: `camelCase.ts` (e.g., `teamConfig.ts`)
+- Types: `camelCase.ts` (e.g., `team.ts`)
 
 **Code:**
-- Composants: `PascalCase`
-- Fonctions/variables: `camelCase`
-- Constantes: `UPPER_SNAKE_CASE`
+- Components: `PascalCase`
+- Functions/variables: `camelCase`
+- Constants: `UPPER_SNAKE_CASE`
 - Types/Interfaces: `PascalCase`
 
 ### Git
 
-**Messages de commit:**
+**Commit messages:**
 
-Suivez le format conventionnel:
+Follow the conventional format:
 
 ```
-type(scope): description courte
+type(scope): short description
 
-Description plus détaillée si nécessaire
+More detailed description if necessary
 
 Fixes #123
 ```
 
 **Types:**
-- `feat`: Nouvelle fonctionnalité
-- `fix`: Correction de bug
+- `feat`: New feature
+- `fix`: Bug fix
 - `docs`: Documentation
-- `style`: Formatage, pas de changement de code
-- `refactor`: Refactoring sans changement de fonctionnalité
-- `test`: Ajout/modification de tests
-- `chore`: Maintenance, dépendances
+- `style`: Formatting, no code change
+- `refactor`: Refactoring without feature change
+- `test`: Adding/modifying tests
+- `chore`: Maintenance, dependencies
 
-**Exemples:**
+**Examples:**
 ```
 feat(voting): add ability to change vote
 fix(sse): reconnect on connection loss
@@ -141,26 +153,26 @@ docs(readme): update installation instructions
 test(planning): add multi-user scenario
 ```
 
-## 🧪 Tests
+## Tests
 
-### Écrire des tests
+### Writing Tests
 
-Les tests Playwright doivent:
-- Tester des scénarios utilisateur complets
-- Simuler plusieurs utilisateurs si nécessaire
-- Vérifier la synchronisation temps réel
-- Utiliser le Page Object Pattern (voir `tests/helpers/`)
+Playwright tests should:
+- Test complete user scenarios
+- Simulate multiple users if necessary
+- Verify real-time synchronization
+- Use the Page Object Pattern (see `tests/helpers/`)
 
-**Exemple:**
+**Example:**
 
 ```typescript
-test('nouveau scénario', async ({ browser }) => {
+test('new scenario', async ({ browser }) => {
   const context = await browser.newContext()
   const page = await context.newPage()
   const planning = new PlanningPage(page)
 
   await page.goto('/')
-  await planning.selectUser('John Doe')
+  await planning.selectUser('Alice')
   await planning.vote(5)
 
   // Assertions...
@@ -169,70 +181,71 @@ test('nouveau scénario', async ({ browser }) => {
 })
 ```
 
-### Règles pour les tests
+### Test Rules
 
-- Un test = un scénario utilisateur
-- Tests indépendants (pas d'état partagé)
-- Noms descriptifs expliquant le scénario
-- Reset du serveur avant chaque test si nécessaire
-- Timeouts généreux pour la synchronisation SSE
+- One test = one user scenario
+- Independent tests (no shared state)
+- Descriptive names explaining the scenario
+- Reset server before each test if necessary
+- Generous timeouts for SSE synchronization
 
-## 🏛️ Architecture
+## Architecture
 
-### Structure des dossiers
+### Folder Structure
 
 ```
-server/          # Backend Hono + SSE
+server/          # Hono backend + SSE
 src/
-  components/    # Composants UI React
+  components/    # React UI components
   hooks/         # Custom React hooks
-  lib/           # Fonctions utilitaires
-  types/         # Définitions TypeScript
+  lib/           # Utility functions
+  types/         # TypeScript definitions
 tests/
-  helpers/       # Page Objects pour Playwright
-  *.spec.ts      # Fichiers de test
+  helpers/       # Page Objects for Playwright
+  *.spec.ts      # Test files
 ```
 
 ### Patterns
 
 **State Management:**
-- État local avec `useState` pour l'UI
-- SSE pour l'état partagé entre utilisateurs
-- Pas de Redux/Zustand pour l'instant
+- Local state with `useState` for UI
+- SSE for shared state between users
+- No Redux/Zustand for now
 
 **API Communication:**
-- SSE pour recevoir les mises à jour (read)
-- Fetch POST pour envoyer les actions (write)
-- Pas de polling
+- SSE to receive updates (read)
+- Fetch POST to send actions (write)
+- No polling
 
 **Error Handling:**
-- Try/catch dans les appels API
-- Console.error pour le debug
-- Messages utilisateur pour les erreurs critiques
+- Try/catch in API calls
+- Console.error for debugging
+- User messages for critical errors
 
-## 📋 Checklist avant PR
+## PR Checklist
 
-- [ ] Le code compile sans erreurs TypeScript
-- [ ] Tous les tests passent (`pnpm test`)
-- [ ] Le code suit les conventions du projet
-- [ ] Les nouveaux fichiers ont les imports/exports appropriés
-- [ ] La documentation est à jour si nécessaire
-- [ ] Les messages de commit suivent les conventions
-- [ ] Pas de console.log oubliés (sauf pour debug intentionnel)
-- [ ] L'accessibilité est maintenue (aria-labels, etc.)
+- [ ] Code compiles without TypeScript errors
+- [ ] All tests pass (`pnpm test`)
+- [ ] Linting passes (`pnpm lint`)
+- [ ] Code follows project conventions
+- [ ] New files have appropriate imports/exports
+- [ ] Documentation is updated if necessary
+- [ ] Commit messages follow conventions
+- [ ] No forgotten console.logs (except for intentional debugging)
+- [ ] Accessibility is maintained (aria-labels, etc.)
 
-## 🤔 Questions?
+## Questions?
 
-N'hésitez pas à:
-- Ouvrir une Issue pour discuter
-- Demander des clarifications dans votre PR
-- Proposer des améliorations à ce guide
+Feel free to:
+- Open an Issue to discuss
+- Ask for clarifications in your PR
+- Suggest improvements to this guide
 
-## 📄 Code de Conduite
+## Code of Conduct
 
-- Respectez les autres contributeurs
-- Acceptez les critiques constructives
-- Focalisez sur ce qui est meilleur pour le projet
-- Faites preuve d'empathie
+- Respect other contributors
+- Accept constructive criticism
+- Focus on what's best for the project
+- Show empathy
 
-Merci de contribuer! 🎉
+Thank you for contributing!
