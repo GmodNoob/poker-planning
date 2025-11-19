@@ -332,8 +332,7 @@ jobs:
     steps:
       - name: Install Scaleway CLI
         run: |
-          curl -s https://raw.githubusercontent.com/scaleway/scaleway-cli/master/scripts/get.sh | sh
-          sudo mv ./scw /usr/local/bin/
+          curl -s https://raw.githubusercontent.com/scaleway/scaleway-cli/master/scripts/get.sh | sudo sh
 
       - name: Configure Scaleway CLI
         run: |
@@ -364,8 +363,7 @@ jobs:
     steps:
       - name: Install Scaleway CLI
         run: |
-          curl -s https://raw.githubusercontent.com/scaleway/scaleway-cli/master/scripts/get.sh | sh
-          sudo mv ./scw /usr/local/bin/
+          curl -s https://raw.githubusercontent.com/scaleway/scaleway-cli/master/scripts/get.sh | sudo sh
 
       - name: Configure Scaleway CLI
         run: |
