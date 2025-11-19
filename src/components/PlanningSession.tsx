@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import PlanningCard from './PlanningCard'
 import { getTeamMembers } from '../lib/teamConfig'
 import { usePlanningSession } from '../hooks/usePlanningSession'
+import { useConfetti } from '../hooks/useConfetti'
 import type { TeamMember } from '../types/team'
 
 // Fibonacci sequence values for poker planning
@@ -10,9 +11,11 @@ const FIBONACCI_VALUES = [0, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, '?'] as const
 export default function PlanningSession() {
   const [currentUser, setCurrentUser] = useState<TeamMember | null>(null)
   const [selectedValue, setSelectedValue] = useState<number | string | null>(null)
+  const previousShowResults = useRef(false)
 
   const teamMembers = getTeamMembers()
   const { votes, showResults, initVotes, vote, reveal, reset } = usePlanningSession()
+  const { fireConfetti } = useConfetti()
 
   // Initialize votes when a user is selected
   const handleUserSelect = (user: TeamMember) => {
@@ -54,9 +57,22 @@ export default function PlanningSession() {
   const votedCount = votes.filter(vote => vote.value !== null).length
 
   // Calculate statistics
-  const numericVotes = votes
+  const voteValues = votes
     .map(v => v.value)
-    .filter((v): v is number => typeof v === 'number' && v !== 0)
+    .filter((v): v is number | string => v !== null)
+
+  const numericVotes = voteValues.filter((v): v is number => typeof v === 'number' && v !== 0)
+
+  // Check if all voters have the same estimate
+  const hasConsensus = voteValues.length >= 2 && voteValues.every(v => v === voteValues[0])
+
+  // Fire confetti when results are revealed and there's consensus
+  useEffect(() => {
+    if (showResults && !previousShowResults.current && hasConsensus) {
+      fireConfetti()
+    }
+    previousShowResults.current = showResults
+  }, [showResults, hasConsensus, fireConfetti])
 
   const average = numericVotes.length > 0
     ? (numericVotes.reduce((a, b) => a + b, 0) / numericVotes.length).toFixed(1)
