@@ -37,7 +37,6 @@ RUN pnpm install --frozen-lockfile --prod
 
 # Copy compiled server code
 COPY --from=builder /app/server-dist ./server
-COPY team.config.json ./
 
 # Copy built frontend from builder stage
 COPY --from=builder /app/dist ./dist
