@@ -329,25 +329,15 @@ jobs:
     environment:
       name: staging
       url: ${{ vars.SCW_STAGING_URL }}
+    env:
+      SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+      SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+      SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_PROJECT_ID }}
+      SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_ORGANIZATION_ID }}
     steps:
       - name: Install Scaleway CLI
         run: |
           curl -s https://raw.githubusercontent.com/scaleway/scaleway-cli/master/scripts/get.sh | sudo sh
-
-      - name: Configure Scaleway CLI
-        env:
-          SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
-          SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
-          SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_PROJECT_ID }}
-          SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_ORGANIZATION_ID }}
-        run: |
-          scw init \
-            secret-key=$SCW_SECRET_KEY \
-            access-key=$SCW_ACCESS_KEY \
-            project-id=$SCW_DEFAULT_PROJECT_ID \
-            organization-id=$SCW_DEFAULT_ORGANIZATION_ID \
-            send-telemetry=false \
-            install-autocomplete=false
 
       - name: Deploy to staging
         run: |
@@ -365,25 +355,15 @@ jobs:
     environment:
       name: production
       url: ${{ vars.SCW_PRODUCTION_URL }}
+    env:
+      SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+      SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+      SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_PROJECT_ID }}
+      SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_ORGANIZATION_ID }}
     steps:
       - name: Install Scaleway CLI
         run: |
           curl -s https://raw.githubusercontent.com/scaleway/scaleway-cli/master/scripts/get.sh | sudo sh
-
-      - name: Configure Scaleway CLI
-        env:
-          SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
-          SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
-          SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_PROJECT_ID }}
-          SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_ORGANIZATION_ID }}
-        run: |
-          scw init \
-            secret-key=$SCW_SECRET_KEY \
-            access-key=$SCW_ACCESS_KEY \
-            project-id=$SCW_DEFAULT_PROJECT_ID \
-            organization-id=$SCW_DEFAULT_ORGANIZATION_ID \
-            send-telemetry=false \
-            install-autocomplete=false
 
       - name: Deploy to production
         run: |
