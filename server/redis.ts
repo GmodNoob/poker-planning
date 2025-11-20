@@ -11,21 +11,52 @@ export function getRedisClient(): Redis {
       throw new Error('REDIS_URL environment variable is required')
     }
 
+    console.log('🔌 Attempting to connect to Redis...')
+
     redis = new Redis(redisUrl, {
       maxRetriesPerRequest: 3,
+      enableReadyCheck: true,
+      enableOfflineQueue: true,
+      connectTimeout: 10000,
       retryStrategy: (times) => {
+        if (times > 10) {
+          console.error('Redis max retries reached')
+          return null
+        }
         const delay = Math.min(times * 50, 2000)
         return delay
       },
-      tls: redisUrl.includes('rediss://') ? {} : undefined,
+      reconnectOnError: (err) => {
+        const targetError = 'READONLY'
+        if (err.message.includes(targetError)) {
+          return true
+        }
+        return false
+      },
+      tls: redisUrl.includes('rediss://') ? {
+        rejectUnauthorized: false
+      } : undefined,
     })
 
     redis.on('error', (err) => {
-      console.error('Redis connection error:', err)
+      console.error('❌ Redis error:', err.message)
+      console.error('Error details:', err)
     })
 
     redis.on('connect', () => {
       console.log('✅ Connected to Redis')
+    })
+
+    redis.on('ready', () => {
+      console.log('✅ Redis is ready')
+    })
+
+    redis.on('close', () => {
+      console.log('⚠️  Redis connection closed')
+    })
+
+    redis.on('reconnecting', () => {
+      console.log('🔄 Reconnecting to Redis...')
     })
   }
 
