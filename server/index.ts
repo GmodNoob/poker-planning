@@ -5,31 +5,7 @@ import { serveStatic } from '@hono/node-server/serve-static'
 import { serve } from '@hono/node-server'
 import { existsSync } from 'fs'
 import { getCookie, setCookie } from 'hono/cookie'
-
-// Types
-interface Member {
-  id: string
-  name: string
-  vote: number | string | null
-  lastActivity: number
-}
-
-interface Room {
-  code: string
-  members: Map<string, Member>
-  showResults: boolean
-  createdAt: number
-}
-
-interface RoomState {
-  code: string
-  members: Array<{
-    id: string
-    name: string
-    vote: number | string | null
-  }>
-  showResults: boolean
-}
+import { RoomStorage, type Room, type RoomState } from './storage'
 
 // Constants
 const SESSION_DURATION = 2 * 60 * 60 * 1000 // 2 hours
@@ -37,18 +13,18 @@ const INACTIVITY_TIMEOUT = 5 * 60 * 1000 // 5 minutes
 const CLEANUP_INTERVAL = 60 * 1000 // 1 minute
 
 // State
-const rooms = new Map<string, Room>()
+const storage = new RoomStorage()
 const roomClients = new Map<string, Set<(data: RoomState) => void>>()
 
 // Generate short room code (6 characters)
-function generateRoomCode(): string {
+async function generateRoomCode(): Promise<string> {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // No confusing chars (0/O, 1/I/L)
   let code = ''
   for (let i = 0; i < 6; i++) {
     code += chars.charAt(Math.floor(Math.random() * chars.length))
   }
   // Ensure uniqueness
-  if (rooms.has(code)) {
+  if (await storage.roomExists(code)) {
     return generateRoomCode()
   }
   return code
@@ -73,8 +49,8 @@ function getRoomState(room: Room): RoomState {
 }
 
 // Broadcast to all clients in a room
-function broadcastToRoom(roomCode: string) {
-  const room = rooms.get(roomCode)
+async function broadcastToRoom(roomCode: string) {
+  const room = await storage.getRoom(roomCode)
   if (!room) return
 
   const clients = roomClients.get(roomCode)
@@ -85,25 +61,8 @@ function broadcastToRoom(roomCode: string) {
 }
 
 // Cleanup inactive members and empty rooms
-function cleanup() {
-  const now = Date.now()
-
-  for (const [code, room] of rooms) {
-    // Remove inactive members
-    for (const [memberId, member] of room.members) {
-      if (now - member.lastActivity > INACTIVITY_TIMEOUT) {
-        room.members.delete(memberId)
-      }
-    }
-
-    // Remove empty rooms
-    if (room.members.size === 0) {
-      rooms.delete(code)
-      roomClients.delete(code)
-    } else {
-      broadcastToRoom(code)
-    }
-  }
+async function cleanup() {
+  await storage.cleanupInactiveMembers(INACTIVITY_TIMEOUT)
 }
 
 // Start cleanup interval
@@ -121,15 +80,9 @@ app.use('/*', cors({
 const api = new Hono()
 
 // Create a new room
-api.post('/rooms', (c) => {
-  const code = generateRoomCode()
-  const room: Room = {
-    code,
-    members: new Map(),
-    showResults: false,
-    createdAt: Date.now()
-  }
-  rooms.set(code, room)
+api.post('/rooms', async (c) => {
+  const code = await generateRoomCode()
+  await storage.createRoom(code)
   roomClients.set(code, new Set())
 
   return c.json({ code })
@@ -140,7 +93,7 @@ api.post('/rooms/:code/join', async (c) => {
   const code = c.req.param('code').toUpperCase()
   const { name } = await c.req.json<{ name: string }>()
 
-  const room = rooms.get(code)
+  const room = await storage.getRoom(code)
   if (!room) {
     return c.json({ error: 'Room not found' }, 404)
   }
@@ -160,14 +113,15 @@ api.post('/rooms/:code/join', async (c) => {
   }
 
   // Create member
-  const member: Member = {
+  const member = {
     id: sessionId,
     name,
-    vote: null,
+    vote: null as number | string | null,
     lastActivity: Date.now()
   }
 
   room.members.set(sessionId, member)
+  await storage.updateRoom(room)
 
   // Set cookie
   setCookie(c, 'session_id', sessionId, {
@@ -177,7 +131,7 @@ api.post('/rooms/:code/join', async (c) => {
     path: '/'
   })
 
-  broadcastToRoom(code)
+  await broadcastToRoom(code)
 
   return c.json({
     success: true,
@@ -187,9 +141,9 @@ api.post('/rooms/:code/join', async (c) => {
 })
 
 // Get room state (SSE)
-api.get('/rooms/:code/events', (c) => {
+api.get('/rooms/:code/events', async (c) => {
   const code = c.req.param('code').toUpperCase()
-  const room = rooms.get(code)
+  const room = await storage.getRoom(code)
 
   if (!room) {
     return c.json({ error: 'Room not found' }, 404)
@@ -201,6 +155,7 @@ api.get('/rooms/:code/events', (c) => {
     const member = room.members.get(sessionId)
     if (member) {
       member.lastActivity = Date.now()
+      await storage.updateRoom(room)
     }
   }
 
@@ -242,9 +197,13 @@ api.get('/rooms/:code/events', (c) => {
 
       // Update activity
       if (sessionId) {
-        const member = room.members.get(sessionId)
-        if (member) {
-          member.lastActivity = Date.now()
+        const latestRoom = await storage.getRoom(code)
+        if (latestRoom) {
+          const member = latestRoom.members.get(sessionId)
+          if (member) {
+            member.lastActivity = Date.now()
+            await storage.updateRoom(latestRoom)
+          }
         }
       }
     }
@@ -252,9 +211,9 @@ api.get('/rooms/:code/events', (c) => {
 })
 
 // Get room info
-api.get('/rooms/:code', (c) => {
+api.get('/rooms/:code', async (c) => {
   const code = c.req.param('code').toUpperCase()
-  const room = rooms.get(code)
+  const room = await storage.getRoom(code)
 
   if (!room) {
     return c.json({ error: 'Room not found' }, 404)
@@ -278,7 +237,7 @@ api.post('/rooms/:code/vote', async (c) => {
   const code = c.req.param('code').toUpperCase()
   const { value } = await c.req.json<{ value: number | string | null }>()
 
-  const room = rooms.get(code)
+  const room = await storage.getRoom(code)
   if (!room) {
     return c.json({ error: 'Room not found' }, 404)
   }
@@ -296,16 +255,17 @@ api.post('/rooms/:code/vote', async (c) => {
   member.vote = value
   member.lastActivity = Date.now()
 
-  broadcastToRoom(code)
+  await storage.updateRoom(room)
+  await broadcastToRoom(code)
 
   return c.json({ success: true })
 })
 
 // Reveal votes
-api.post('/rooms/:code/reveal', (c) => {
+api.post('/rooms/:code/reveal', async (c) => {
   const code = c.req.param('code').toUpperCase()
 
-  const room = rooms.get(code)
+  const room = await storage.getRoom(code)
   if (!room) {
     return c.json({ error: 'Room not found' }, 404)
   }
@@ -316,16 +276,17 @@ api.post('/rooms/:code/reveal', (c) => {
   }
 
   room.showResults = true
-  broadcastToRoom(code)
+  await storage.updateRoom(room)
+  await broadcastToRoom(code)
 
   return c.json({ success: true })
 })
 
 // Reset votes
-api.post('/rooms/:code/reset', (c) => {
+api.post('/rooms/:code/reset', async (c) => {
   const code = c.req.param('code').toUpperCase()
 
-  const room = rooms.get(code)
+  const room = await storage.getRoom(code)
   if (!room) {
     return c.json({ error: 'Room not found' }, 404)
   }
@@ -340,17 +301,18 @@ api.post('/rooms/:code/reset', (c) => {
     member.vote = null
   }
 
-  broadcastToRoom(code)
+  await storage.updateRoom(room)
+  await broadcastToRoom(code)
 
   return c.json({ success: true })
 })
 
 // Remove a member from the room
-api.delete('/rooms/:code/members/:memberId', (c) => {
+api.delete('/rooms/:code/members/:memberId', async (c) => {
   const code = c.req.param('code').toUpperCase()
   const memberId = c.req.param('memberId')
 
-  const room = rooms.get(code)
+  const room = await storage.getRoom(code)
   if (!room) {
     return c.json({ error: 'Room not found' }, 404)
   }
@@ -365,7 +327,8 @@ api.delete('/rooms/:code/members/:memberId', (c) => {
   }
 
   room.members.delete(memberId)
-  broadcastToRoom(code)
+  await storage.updateRoom(room)
+  await broadcastToRoom(code)
 
   return c.json({ success: true })
 })

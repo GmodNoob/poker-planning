@@ -62,7 +62,8 @@ Celebrate when everyone agrees!
 - **Hono** - Lightweight web framework
 - **Server-Sent Events** for real-time synchronization
 - **Node.js** with TypeScript
-- **In-memory storage** with automatic cleanup
+- **Redis** - Distributed storage for horizontal scaling
+- **ioredis** - Redis client with connection pooling
 
 ### Tests
 - **Playwright** for end-to-end tests
@@ -77,6 +78,7 @@ Celebrate when everyone agrees!
 
 - Node.js 22+
 - pnpm 10+
+- **Redis** (local or remote instance)
 
 ### Installation
 
@@ -90,6 +92,32 @@ pnpm install
 
 # Install Playwright browsers (for tests)
 pnpm exec playwright install chromium
+
+# Configure environment variables
+cp .env.example .env
+# Edit .env and set your REDIS_URL
+```
+
+### Redis Setup
+
+The application requires a Redis instance for storing room data across multiple container instances.
+
+**Option 1: Local Redis (for development)**
+```bash
+# Using Docker
+docker run -d -p 6379:6379 redis:alpine
+
+# Set in .env:
+REDIS_URL=redis://localhost:6379
+```
+
+**Option 2: Scaleway Managed Redis (for production)**
+1. Create a Managed Database for Redis instance in Scaleway
+2. Configure Private Network if needed
+3. Get the connection URL from Scaleway console
+4. Set in your environment:
+```bash
+REDIS_URL=redis://username:password@your-redis-instance.fr-par.scw.cloud:6379
 ```
 
 ### Development
@@ -149,7 +177,9 @@ pnpm format
 ```
 poc-er-planning/
 ├── server/              # Hono API server
-│   └── index.ts        # API endpoints and SSE handling
+│   ├── index.ts        # API endpoints and SSE handling
+│   ├── storage.ts      # Redis storage layer for rooms
+│   └── redis.ts        # Redis client wrapper
 ├── src/
 │   ├── pages/          # Page components
 │   │   ├── Home.tsx    # Homepage with room creation
@@ -177,16 +207,26 @@ poc-er-planning/
 
 ## Architecture
 
+### Storage & Scalability
+- **Redis** for distributed session storage
+  - Rooms stored with 2-hour TTL (auto-expiry)
+  - Supports horizontal scaling across multiple container instances
+  - Atomic operations for consistency
+- Session data persists across container restarts
+- Inactive member cleanup runs every minute
+
 ### Room System
 - Rooms are identified by 6-character codes (e.g., `ABC123`)
 - Members are tracked via session cookies (httpOnly, 2h expiry)
 - Inactive members are automatically removed after 5 minutes
-- Empty rooms are automatically deleted
+- Empty rooms are automatically cleaned up by Redis TTL
 
 ### Real-time Updates
 - Server-Sent Events broadcast room state to all connected clients
 - Automatic reconnection on connection loss
 - Keep-alive pings every 30 seconds
+- SSE clients tracked per container (roomClients Map)
+- Room state fetched from Redis on each broadcast
 
 ## Available Scripts
 
