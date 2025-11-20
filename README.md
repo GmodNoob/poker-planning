@@ -102,16 +102,38 @@ cp .env.example .env
 
 The application requires a Redis instance for storing room data across multiple container instances.
 
-**Option 1: Local Redis (for development)**
+**Option 1: Docker Compose (Recommended for development)**
 ```bash
-# Using Docker
-docker run -d -p 6379:6379 redis:alpine
+# Start Redis
+docker-compose up -d
+
+# Stop Redis
+docker-compose down
+
+# View logs
+docker-compose logs -f redis
 
 # Set in .env:
 REDIS_URL=redis://localhost:6379
 ```
 
-**Option 2: Scaleway Managed Redis (for production)**
+**Option 2: Standalone Docker**
+```bash
+docker run -d --name poker-redis -p 6379:6379 redis:alpine
+```
+
+**Option 3: Local Redis installation**
+```bash
+# macOS
+brew install redis
+brew services start redis
+
+# Linux (Ubuntu/Debian)
+sudo apt-get install redis-server
+sudo systemctl start redis
+```
+
+**Option 4: Scaleway Managed Redis (for production)**
 1. Create a Managed Database for Redis instance in Scaleway
 2. Configure Private Network if needed
 3. Get the connection URL from Scaleway console

@@ -51,10 +51,13 @@ pnpm install
 pnpm exec playwright install chromium
 
 # Setup Redis (required)
-# Option 1: Using Docker
+# Option 1: Docker Compose (recommended)
+docker-compose up -d
+
+# Option 2: Standalone Docker
 docker run -d --name poker-redis -p 6379:6379 redis:alpine
 
-# Option 2: Install Redis locally (macOS)
+# Option 3: Install Redis locally (macOS)
 brew install redis
 brew services start redis
 
