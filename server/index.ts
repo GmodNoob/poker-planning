@@ -6,6 +6,7 @@ import { serve } from '@hono/node-server'
 import { existsSync } from 'fs'
 import { getCookie, setCookie } from 'hono/cookie'
 import { RoomStorage, type Room, type RoomState } from './storage.js'
+import { rateLimiter, bodySizeLimiter, securityHeaders, isValidVote, isValidName, isValidRoomCode } from './security.js'
 
 // Constants
 const SESSION_DURATION = 2 * 60 * 60 * 1000 // 2 hours
@@ -70,6 +71,9 @@ setInterval(cleanup, CLEANUP_INTERVAL)
 
 const app = new Hono()
 
+// Security headers
+app.use('/*', securityHeaders)
+
 // CORS
 app.use('/*', cors({
   origin: (origin) => origin || '*',
@@ -78,6 +82,17 @@ app.use('/*', cors({
 
 // API Routes
 const api = new Hono()
+
+// Rate limiting for API routes
+api.use('/*', rateLimiter)
+
+// Body size limiting for POST/PUT/PATCH
+api.use('/*', async (c, next) => {
+  if (['POST', 'PUT', 'PATCH'].includes(c.req.method)) {
+    return bodySizeLimiter(c, next)
+  }
+  await next()
+})
 
 // Create a new room
 api.post('/rooms', async (c) => {
@@ -92,6 +107,16 @@ api.post('/rooms', async (c) => {
 api.post('/rooms/:code/join', async (c) => {
   const code = c.req.param('code').toUpperCase()
   const { name } = await c.req.json<{ name: string }>()
+
+  // Validate room code
+  if (!isValidRoomCode(code)) {
+    return c.json({ error: 'Invalid room code' }, 400)
+  }
+
+  // Validate name
+  if (!isValidName(name)) {
+    return c.json({ error: 'Name must be between 1 and 50 characters' }, 400)
+  }
 
   const room = await storage.getRoom(code)
   if (!room) {
@@ -236,6 +261,16 @@ api.get('/rooms/:code', async (c) => {
 api.post('/rooms/:code/vote', async (c) => {
   const code = c.req.param('code').toUpperCase()
   const { value } = await c.req.json<{ value: number | string | null }>()
+
+  // Validate room code
+  if (!isValidRoomCode(code)) {
+    return c.json({ error: 'Invalid room code' }, 400)
+  }
+
+  // Validate vote value
+  if (!isValidVote(value)) {
+    return c.json({ error: 'Invalid vote value' }, 400)
+  }
 
   const room = await storage.getRoom(code)
   if (!room) {
