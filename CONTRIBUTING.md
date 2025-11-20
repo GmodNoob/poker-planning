@@ -41,8 +41,8 @@ Thank you for your interest in contributing to Poker Planning! This document des
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR-USERNAME/poc-er-planning.git
-cd poc-er-planning
+git clone https://github.com/YOUR-USERNAME/poker-planning.git
+cd poker-planning
 
 # Install dependencies
 pnpm install

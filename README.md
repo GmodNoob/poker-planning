@@ -85,7 +85,7 @@ Celebrate when everyone agrees!
 ```bash
 # Clone the repository
 git clone <url>
-cd poc-er-planning
+cd poker-planning
 
 # Install dependencies
 pnpm install
@@ -212,7 +212,7 @@ pnpm format
 ## Project Structure
 
 ```
-poc-er-planning/
+poker-planning/
 ├── server/              # Hono API server
 │   ├── index.ts        # API endpoints and SSE handling
 │   ├── storage.ts      # Redis storage layer for rooms
