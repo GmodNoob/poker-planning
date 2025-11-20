@@ -324,19 +324,19 @@ export default function Room() {
               })
 
               return (
-                <div className="space-y-2">
-                  <h4 className="text-xs text-purple-300 text-center mb-3">Vote Distribution</h4>
-                  <div className="flex items-end justify-center gap-2 h-24">
+                <div className="space-y-2 mt-6">
+                  <h4 className="text-xs font-medium text-purple-300 text-center mb-4">Vote Distribution</h4>
+                  <div className="flex items-end justify-center gap-3 px-4">
                     {sortedVotes.map(([value, count]) => {
-                      const heightPercent = (count / maxCount) * 100
+                      const heightPx = (count / maxCount) * 120 // Max height 120px
                       return (
-                        <div key={value} className="flex flex-col items-center gap-1">
-                          <span className="text-xs text-purple-200">{count}</span>
+                        <div key={value} className="flex flex-col items-center gap-1.5 min-w-[48px]">
+                          <span className="text-xs font-semibold text-purple-200 mb-1">{count}</span>
                           <div
-                            className="w-10 bg-gradient-to-t from-purple-600 to-purple-400 rounded-t-md transition-all duration-500"
-                            style={{ height: `${heightPercent}%`, minHeight: '8px' }}
+                            className="w-12 bg-gradient-to-t from-purple-600 to-purple-400 rounded-t-lg transition-all duration-500 shadow-lg"
+                            style={{ height: `${Math.max(heightPx, 12)}px` }}
                           />
-                          <span className="text-sm font-medium text-white">{value}</span>
+                          <span className="text-base font-bold text-white mt-1">{value}</span>
                         </div>
                       )
                     })}
