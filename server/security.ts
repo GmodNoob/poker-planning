@@ -24,6 +24,12 @@ const RATE_LIMIT_WINDOW = 60 * 1000 // 1 minute
 const MAX_REQUESTS_PER_WINDOW = 60 // 60 requests per minute
 
 export async function rateLimiter(c: Context, next: Next) {
+  // Skip rate limiting in development/test environments
+  if (process.env.NODE_ENV !== 'production') {
+    await next()
+    return
+  }
+
   const redis = getRedisClient()
   const ip = c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || 'unknown'
   const key = `rate_limit:${ip}`
