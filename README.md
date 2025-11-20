@@ -244,6 +244,56 @@ poc-er-planning/
 
 ## Architecture
 
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        Browser[Web Browser]
+    end
+
+    subgraph "Scaleway Infrastructure"
+        subgraph "GitHub Container Registry"
+            GHCR[ghcr.io/slashgear/poker-planning]
+        end
+
+        subgraph "Private Network VPC"
+            subgraph "Serverless Containers"
+                Container1[Container Instance 1<br/>Hono API + Static Files]
+                Container2[Container Instance 2<br/>Hono API + Static Files]
+                ContainerN[Container Instance N<br/>Hono API + Static Files]
+            end
+
+            Redis[(Redis<br/>Managed Database<br/>TLS Enabled)]
+        end
+    end
+
+    subgraph "CI/CD Pipeline"
+        GitHub[GitHub Actions]
+        GitHub -->|Build & Push| GHCR
+        GitHub -->|Deploy Staging| Container1
+        GitHub -->|Deploy Production v2.x.x| Container2
+    end
+
+    Browser -->|HTTPS| Container1
+    Browser -->|HTTPS| Container2
+    Browser -->|SSE Connection| Container1
+    Browser -->|SSE Connection| Container2
+
+    Container1 -->|rediss://| Redis
+    Container2 -->|rediss://| Redis
+    ContainerN -->|rediss://| Redis
+
+    Redis -.->|Room Data<br/>TTL: 2h| Redis
+    Container1 -.->|SSE Broadcast| Browser
+    Container2 -.->|SSE Broadcast| Browser
+
+    style Redis fill:#ff6b6b
+    style Container1 fill:#4ecdc4
+    style Container2 fill:#4ecdc4
+    style ContainerN fill:#4ecdc4
+    style Browser fill:#95e1d3
+    style GHCR fill:#f38181
+```
+
 ### Storage & Scalability
 - **Redis** for distributed session storage
   - Rooms stored with 2-hour TTL (auto-expiry)
