@@ -347,6 +347,11 @@ jobs:
             registry-image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
             redeploy=true
 
+          # Wait for deployment to complete
+          scw container container wait \
+            ${{ secrets.SCW_STAGING_CONTAINER_ID }} \
+            region=${{ env.SCW_DEFAULT_REGION }}
+
   # Job: Deploy to Scaleway (production)
   deploy-production:
     runs-on: ubuntu-latest
@@ -372,3 +377,8 @@ jobs:
             region=${{ env.SCW_DEFAULT_REGION }} \
             registry-image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }} \
             redeploy=true
+
+          # Wait for deployment to complete
+          scw container container wait \
+            ${{ secrets.SCW_PRODUCTION_CONTAINER_ID }} \
+            region=${{ env.SCW_DEFAULT_REGION }}
