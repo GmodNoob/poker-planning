@@ -407,7 +407,10 @@ if (existsSync(distPath)) {
     await next();
     c.header("Cache-Control", "no-store");
   });
-  app.get("*", serveStatic({ root: distPath, path: "index.html", precompressed: true }));
+  app.get(
+    "*",
+    serveStatic({ root: distPath, path: "index.html", precompressed: true }),
+  );
   console.log("📦 Serving static files from dist/");
 }
 
