@@ -142,7 +142,7 @@ export default function Room() {
   // Error state
   if (error && !roomState) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <div className="text-center px-4">
           <h2 className="text-2xl font-bold text-white mb-4">Room Not Found</h2>
           <p className="text-purple-200 mb-6">{error}</p>
@@ -153,14 +153,14 @@ export default function Room() {
             Go Home
           </a>
         </div>
-      </div>
+      </main>
     )
   }
 
   // Join form if not a member
   if (!roomInfo?.currentMember) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <div className="text-center px-4 w-full max-w-sm">
           <h2 className="text-2xl font-bold text-white mb-2">Join Room</h2>
           <p className="text-purple-200 mb-6">
@@ -191,7 +191,7 @@ export default function Room() {
             </button>
           </form>
         </div>
-      </div>
+      </main>
     )
   }
 
@@ -210,7 +210,7 @@ export default function Room() {
     : 0
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <div className="container mx-auto px-4 py-4">
         {/* Header */}
         <header className="text-center mb-4">
@@ -352,6 +352,6 @@ export default function Room() {
           Logged in as: {currentMember.name}
         </div>
       </div>
-    </div>
+    </main>
   )
 }
