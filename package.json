@@ -12,6 +12,7 @@
     "lint": "oxlint src server tests",
     "format": "oxfmt --check src server tests",
     "test": "playwright test",
+    "test:unit": "vitest run",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report",
@@ -31,13 +32,15 @@
     "autoprefixer": "10.4.22",
     "babel-plugin-react-compiler": "^1.0.0",
     "husky": "^9.1.7",
+    "ioredis-mock": "^8.13.1",
     "oxfmt": "0.14.0",
     "oxlint": "1.29.0",
     "postcss": "8.5.6",
     "tailwindcss": "4.1.17",
     "tsx": "4.20.6",
     "typescript": "5.9.3",
-    "vite": "7.2.2"
+    "vite": "7.2.2",
+    "vitest": "^4.0.13"
   },
   "dependencies": {
     "@hono/node-server": "1.19.6",
