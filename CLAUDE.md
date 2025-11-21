@@ -9,7 +9,8 @@ This is a poker planning web application for agile task estimation using the Fib
 **Tech Stack:**
 - **Frontend**: React 19, Tailwind CSS 4, TanStack Router
 - **Backend**: Hono server with Server-Sent Events
-- **State**: In-memory with session cookies (httpOnly, 2h)
+- **Storage**: Redis for room state persistence
+- **State**: Session cookies (httpOnly, 2h)
 
 ## Key Architecture
 
@@ -38,15 +39,27 @@ This is a poker planning web application for agile task estimation using the Fib
 ## Development Commands
 
 ```bash
-# Run both servers for development
-pnpm run dev:server  # Terminal 1 - API (port 3001)
-pnpm run dev         # Terminal 2 - Frontend (port 5173)
+# Start Redis first
+docker-compose up -d redis
 
-# Testing
-pnpm test            # Run Playwright tests
-pnpm lint            # Run oxlint
-pnpm format          # Format with oxfmt
+# Run both servers for development
+REDIS_URL=redis://localhost:6379 pnpm run dev:server  # Terminal 1 - API (port 3001)
+pnpm run dev                                          # Terminal 2 - Frontend (port 5173)
+
+# Testing (requires Redis)
+REDIS_URL=redis://localhost:6379 pnpm test  # Run Playwright tests
+pnpm lint                                    # Run oxlint
+pnpm format                                  # Check formatting with oxfmt
+
+# Docker
+docker-compose up -d --build  # Build and run full stack (port 3001)
 ```
+
+## Conventions
+
+- **Commits**: Use Conventional Commits format (feat:, fix:, chore:, etc.)
+- **Pre-commit**: Husky runs format, lint, and typecheck before each commit
+- **Releases**: When creating a release, update version in Home.tsx and Room.tsx footer
 
 ## Important Patterns
 
