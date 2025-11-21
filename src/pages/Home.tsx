@@ -1,26 +1,26 @@
-import { useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
-import { createRoom } from '../hooks/useRoom'
+import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { createRoom } from "../hooks/useRoom";
 
 export default function Home() {
-  const navigate = useNavigate()
-  const [isCreating, setIsCreating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate();
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleCreateRoom = async () => {
-    setIsCreating(true)
-    setError(null)
+    setIsCreating(true);
+    setError(null);
 
-    const result = await createRoom()
+    const result = await createRoom();
 
-    if ('error' in result) {
-      setError(result.error)
-      setIsCreating(false)
-      return
+    if ("error" in result) {
+      setError(result.error);
+      setIsCreating(false);
+      return;
     }
 
-    navigate({ to: '/room/$code', params: { code: result.code } })
-  }
+    navigate({ to: "/room/$code", params: { code: result.code } });
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
@@ -29,7 +29,8 @@ export default function Home() {
           Poker Planning
         </h1>
         <p className="text-lg text-purple-200 mb-8 max-w-md mx-auto">
-          Collaborative estimation with the Fibonacci sequence. Create a room and invite your team.
+          Collaborative estimation with the Fibonacci sequence. Create a room
+          and invite your team.
         </p>
 
         <button
@@ -37,19 +38,22 @@ export default function Home() {
           disabled={isCreating}
           className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 disabled:cursor-not-allowed text-white font-semibold py-3 px-8 rounded-lg text-lg transition-colors shadow-lg"
         >
-          {isCreating ? 'Creating...' : 'Create a Room'}
+          {isCreating ? "Creating..." : "Create a Room"}
         </button>
 
-        {error && (
-          <p className="mt-4 text-red-400">{error}</p>
-        )}
+        {error && <p className="mt-4 text-red-400">{error}</p>}
 
         <div className="mt-12 text-sm text-purple-300/70">
           <p>Rooms expire after 2 hours of inactivity</p>
         </div>
 
         <footer className="mt-16 text-xs text-purple-300/40">
-          <a href="https://github.com/Slashgear/poker-planning" target="_blank" rel="noopener noreferrer" className="hover:text-purple-300/70 transition-colors">
+          <a
+            href="https://github.com/Slashgear/poker-planning"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-purple-300/70 transition-colors"
+          >
             GitHub
           </a>
           <span className="mx-2">·</span>
@@ -57,5 +61,5 @@ export default function Home() {
         </footer>
       </div>
     </main>
-  )
+  );
 }

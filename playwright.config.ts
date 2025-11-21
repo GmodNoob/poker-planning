@@ -1,29 +1,25 @@
-import { defineConfig, devices } from '@playwright/test'
+import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
-  testDir: './tests',
+  testDir: "./tests",
   fullyParallel: false, // Disabled for multi-user tests
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: 1, // Single worker to avoid state conflicts
   reporter: process.env.CI
-    ? [
-        ['html'],
-        ['junit', { outputFile: 'test-results/junit.xml' }],
-        ['list']
-      ]
-    : 'html',
+    ? [["html"], ["junit", { outputFile: "test-results/junit.xml" }], ["list"]]
+    : "html",
 
   use: {
-    baseURL: 'http://localhost:5173',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
+    baseURL: "http://localhost:5173",
+    trace: "on-first-retry",
+    screenshot: "only-on-failure",
   },
 
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
   ],
-})
+});

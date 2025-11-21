@@ -1,17 +1,16 @@
+import Redis from "ioredis";
 
-import Redis from 'ioredis'
-
-let redis: Redis | null = null
+let redis: Redis | null = null;
 
 export function getRedisClient(): Redis {
   if (!redis) {
-    const redisUrl = process.env.REDIS_URL
+    const redisUrl = process.env.REDIS_URL;
 
     if (!redisUrl) {
-      throw new Error('REDIS_URL environment variable is required')
+      throw new Error("REDIS_URL environment variable is required");
     }
 
-    console.log('🔌 Attempting to connect to Redis...')
+    console.log("🔌 Attempting to connect to Redis...");
 
     redis = new Redis(redisUrl, {
       maxRetriesPerRequest: 3,
@@ -20,52 +19,54 @@ export function getRedisClient(): Redis {
       connectTimeout: 10000,
       retryStrategy: (times) => {
         if (times > 10) {
-          console.error('Redis max retries reached')
-          return null
+          console.error("Redis max retries reached");
+          return null;
         }
-        const delay = Math.min(times * 50, 2000)
-        return delay
+        const delay = Math.min(times * 50, 2000);
+        return delay;
       },
       reconnectOnError: (err) => {
-        const targetError = 'READONLY'
+        const targetError = "READONLY";
         if (err.message.includes(targetError)) {
-          return true
+          return true;
         }
-        return false
+        return false;
       },
-      tls: redisUrl.includes('rediss://') ? {
-        rejectUnauthorized: false
-      } : undefined,
-    })
+      tls: redisUrl.includes("rediss://")
+        ? {
+            rejectUnauthorized: false,
+          }
+        : undefined,
+    });
 
-    redis.on('error', (err) => {
-      console.error('❌ Redis error:', err.message)
-      console.error('Error details:', err)
-    })
+    redis.on("error", (err) => {
+      console.error("❌ Redis error:", err.message);
+      console.error("Error details:", err);
+    });
 
-    redis.on('connect', () => {
-      console.log('✅ Connected to Redis')
-    })
+    redis.on("connect", () => {
+      console.log("✅ Connected to Redis");
+    });
 
-    redis.on('ready', () => {
-      console.log('✅ Redis is ready')
-    })
+    redis.on("ready", () => {
+      console.log("✅ Redis is ready");
+    });
 
-    redis.on('close', () => {
-      console.log('⚠️  Redis connection closed')
-    })
+    redis.on("close", () => {
+      console.log("⚠️  Redis connection closed");
+    });
 
-    redis.on('reconnecting', () => {
-      console.log('🔄 Reconnecting to Redis...')
-    })
+    redis.on("reconnecting", () => {
+      console.log("🔄 Reconnecting to Redis...");
+    });
   }
 
-  return redis
+  return redis;
 }
 
 export async function closeRedis(): Promise<void> {
   if (redis) {
-    await redis.quit()
-    redis = null
+    await redis.quit();
+    redis = null;
   }
 }
