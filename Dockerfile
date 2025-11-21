@@ -3,6 +3,9 @@ FROM node:22.16.0-alpine AS builder
 
 WORKDIR /app
 
+# Install compression tools (stable layer, rarely changes)
+RUN apk add --no-cache brotli zstd zopfli
+
 # Enable corepack and install pnpm
 RUN corepack enable && corepack prepare pnpm@10.17.0 --activate
 
@@ -18,9 +21,8 @@ COPY . .
 # Build the frontend application
 RUN pnpm run build
 
-# Install compression tools and precompress static assets
-RUN apk add --no-cache brotli zstd zopfli && \
-    find dist -type f \( -name "*.js" -o -name "*.css" -o -name "*.html" -o -name "*.svg" -o -name "*.json" \) | while read file; do \
+# Precompress static assets
+RUN find dist -type f \( -name "*.js" -o -name "*.css" -o -name "*.html" -o -name "*.svg" -o -name "*.json" \) | while read file; do \
       brotli -k -q 11 "$file"; \
       zstd -k -q --ultra -22 "$file"; \
       zopfli "$file"; \
