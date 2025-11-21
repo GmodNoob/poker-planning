@@ -374,7 +374,27 @@ app.route('/api', api)
 // Serve static files in production
 const distPath = './dist'
 if (existsSync(distPath)) {
+  // Assets with hash in filename - cache for 1 year (immutable)
+  app.use('/assets/*', async (c, next) => {
+    await next()
+    c.header('Cache-Control', 'public, max-age=31536000, immutable')
+  })
+  app.use('/assets/*', serveStatic({ root: distPath }))
+
+  // Other static files (favicon, etc) - cache for 1 day
+  app.use('/*', async (c, next) => {
+    await next()
+    if (!c.req.path.startsWith('/api')) {
+      c.header('Cache-Control', 'public, max-age=86400')
+    }
+  })
   app.use('/*', serveStatic({ root: distPath }))
+
+  // SPA fallback - no cache for index.html
+  app.get('*', async (c, next) => {
+    await next()
+    c.header('Cache-Control', 'no-store')
+  })
   app.get('*', serveStatic({ root: distPath, path: 'index.html' }))
   console.log('📦 Serving static files from dist/')
 }
