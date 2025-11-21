@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams } from "@tanstack/react-router";
 import { useRoom } from "../hooks/useRoom";
 import { useConfetti } from "../hooks/useConfetti";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 
 const FIBONACCI_VALUES = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, "?", "☕"];
 
@@ -109,6 +110,7 @@ export default function Room() {
   const members = roomState?.members || [];
   const currentMemberId = roomInfo?.currentMember?.id;
   const myVote = members.find((m) => m.id === currentMemberId)?.vote;
+  const votedCount = members.filter((m) => m.vote !== null).length;
 
   // Sync selected value with server state
   useEffect(() => {
@@ -224,7 +226,6 @@ export default function Room() {
 
   // Main room view
   const showResults = roomState?.showResults || false;
-  const votedCount = members.filter((m) => m.vote !== null).length;
   const currentMember = roomInfo.currentMember;
 
   // Calculate statistics
@@ -236,6 +237,15 @@ export default function Room() {
     numericVotes.length > 0
       ? numericVotes.reduce((a, b) => a + b, 0) / numericVotes.length
       : 0;
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onVote: handleVote,
+    onReveal: reveal,
+    onReset: reset,
+    canReveal: votedCount > 0,
+    showResults: showResults,
+  });
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -397,6 +407,21 @@ export default function Room() {
             })()}
           </div>
         )}
+
+        {/* Keyboard shortcuts hint */}
+        <div className="text-center mt-6 text-xs text-purple-300/60">
+          <div className="inline-flex items-center gap-4 flex-wrap justify-center">
+            <span>
+              <kbd className="px-2 py-1 bg-white/10 rounded">1-9</kbd> Vote
+            </span>
+            <span>
+              <kbd className="px-2 py-1 bg-white/10 rounded">V</kbd> Reveal
+            </span>
+            <span>
+              <kbd className="px-2 py-1 bg-white/10 rounded">R</kbd> Reset
+            </span>
+          </div>
+        </div>
 
         {/* Current user info */}
         <div className="text-center mt-4 text-xs text-purple-300/50">

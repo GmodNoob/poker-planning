@@ -34,6 +34,8 @@ This is a poker planning web application for agile task estimation using the Fib
 - `src/pages/Home.tsx` - Room creation
 - `src/pages/Room.tsx` - Voting interface with member management
 - `src/hooks/useRoom.ts` - Room state and actions hook
+- `src/hooks/useKeyboardShortcuts.ts` - Keyboard shortcuts for voting, reveal, and reset
+- `src/hooks/useConfetti.ts` - Confetti animation on consensus
 - `src/routeTree.gen.ts` - TanStack Router configuration
 
 ## Development Commands
@@ -67,3 +69,8 @@ docker-compose up -d --build  # Build and run full stack (port 3001)
 - Votes hidden until reveal (displayed as '?' or '-')
 - Confetti animation on consensus (all votes match)
 - Cookie-based session for seamless reconnection
+- Keyboard shortcuts for enhanced UX:
+  - `1-9`: Vote for Fibonacci values (1, 2, 3, 5, 8, 13, 21, 34, 55)
+  - `V`: Reveal votes (when votes available)
+  - `R`: Reset round
+  - Shortcuts disabled when typing in input fields
