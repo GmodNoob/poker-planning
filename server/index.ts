@@ -391,7 +391,7 @@ if (existsSync(distPath)) {
     await next();
     c.header("Cache-Control", "public, max-age=31536000, immutable");
   });
-  app.use("/assets/*", serveStatic({ root: distPath }));
+  app.use("/assets/*", serveStatic({ root: distPath, precompressed: true }));
 
   // Other static files (favicon, etc) - cache for 1 day
   app.use("/*", async (c, next) => {
@@ -400,14 +400,14 @@ if (existsSync(distPath)) {
       c.header("Cache-Control", "public, max-age=86400");
     }
   });
-  app.use("/*", serveStatic({ root: distPath }));
+  app.use("/*", serveStatic({ root: distPath, precompressed: true }));
 
   // SPA fallback - no cache for index.html
   app.get("*", async (c, next) => {
     await next();
     c.header("Cache-Control", "no-store");
   });
-  app.get("*", serveStatic({ root: distPath, path: "index.html" }));
+  app.get("*", serveStatic({ root: distPath, path: "index.html", precompressed: true }));
   console.log("📦 Serving static files from dist/");
 }
 
