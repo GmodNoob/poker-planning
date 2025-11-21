@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { logger } from "hono/logger";
 import { streamSSE } from "hono/streaming";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { serve } from "@hono/node-server";
@@ -77,6 +78,9 @@ async function cleanup() {
 setInterval(cleanup, CLEANUP_INTERVAL);
 
 const app = new Hono();
+
+// HTTP logger
+app.use("*", logger());
 
 // Security headers
 app.use("/*", securityHeaders);
