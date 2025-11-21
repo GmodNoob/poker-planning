@@ -413,7 +413,7 @@ export default function Room() {
             GitHub
           </a>
           <span className="mx-2">·</span>
-          <span>v2.1.0</span>
+          <span>v2.2.1</span>
         </footer>
       </div>
     </main>
