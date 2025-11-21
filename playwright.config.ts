@@ -26,15 +26,19 @@ export default defineConfig({
   webServer: [
     {
       command: "REDIS_URL=redis://localhost:6379 pnpm run dev:server",
-      url: "http://localhost:3001/health",
+      url: "http://localhost:3001/api/health",
       timeout: 120000,
       reuseExistingServer: !process.env.CI,
+      stdout: "pipe",
+      stderr: "pipe",
     },
     {
       command: "pnpm run dev",
       url: "http://localhost:5173",
       timeout: 120000,
       reuseExistingServer: !process.env.CI,
+      stdout: "pipe",
+      stderr: "pipe",
     },
   ],
 });

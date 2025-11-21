@@ -142,28 +142,8 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Start servers and run tests
-        run: |
-          # Start SSE server in background
-          pnpm run dev:server &
-          SERVER_PID=$!
-
-          # Start Vite in background
-          pnpm run dev &
-          VITE_PID=$!
-
-          # Wait for servers to start
-          sleep 10
-
-          # Verify servers are running
-          curl --retry 30 --retry-connrefused --retry-delay 1 http://localhost:3001/api/rooms
-          curl --retry 30 --retry-connrefused --retry-delay 1 http://localhost:5173
-
-          # Run tests
-          pnpm test
-
-          # Stop servers
-          kill $SERVER_PID $VITE_PID || true
+      - name: Run E2E tests
+        run: pnpm test
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
