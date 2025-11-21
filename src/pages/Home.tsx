@@ -47,6 +47,14 @@ export default function Home() {
         <div className="mt-12 text-sm text-purple-300/70">
           <p>Rooms expire after 2 hours of inactivity</p>
         </div>
+
+        <footer className="mt-16 text-xs text-purple-300/40">
+          <a href="https://github.com/Slashgear/poker-planning" target="_blank" rel="noopener noreferrer" className="hover:text-purple-300/70 transition-colors">
+            GitHub
+          </a>
+          <span className="mx-2">·</span>
+          <span>v2.1.0</span>
+        </footer>
       </div>
     </main>
   )

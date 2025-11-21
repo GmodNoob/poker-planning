@@ -351,6 +351,14 @@ export default function Room() {
         <div className="text-center mt-4 text-xs text-purple-300/50">
           Logged in as: {currentMember.name}
         </div>
+
+        <footer className="mt-8 text-center text-xs text-purple-300/40">
+          <a href="https://github.com/Slashgear/poker-planning" target="_blank" rel="noopener noreferrer" className="hover:text-purple-300/70 transition-colors">
+            GitHub
+          </a>
+          <span className="mx-2">·</span>
+          <span>v2.1.0</span>
+        </footer>
       </div>
     </main>
   )
