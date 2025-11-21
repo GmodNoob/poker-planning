@@ -1,4 +1,2 @@
 User-agent: *
 Allow: /
-
-Sitemap: https://poker-planning.slashgear.dev/sitemap.xml
