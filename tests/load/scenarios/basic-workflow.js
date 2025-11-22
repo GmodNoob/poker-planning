@@ -49,7 +49,7 @@ export const options = {
 const BASE_URL = __ENV.API_URL || "http://localhost:3001";
 
 // Fibonacci values for voting
-const FIBONACCI = ["1", "2", "3", "5", "8", "13", "21", "?", "☕"];
+const FIBONACCI = [1, 2, 3, 5, 8, 13, 21, "?", "☕"];
 
 /**
  * Generate a random member name
