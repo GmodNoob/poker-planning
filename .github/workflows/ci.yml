@@ -514,7 +514,7 @@ jobs:
           echo "$CHANGELOG" > changelog.txt
 
       - name: Create Release
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
