@@ -54,7 +54,8 @@ const MemberSchema = z
   })
   .openapi("Member");
 
-const RoomStateSchema = z
+// RoomState schema for SSE events (not used in OpenAPI routes since SSE isn't documented)
+const _RoomStateSchema = z
   .object({
     code: z.string().openapi({ example: "ABC123" }),
     members: z.array(MemberSchema),

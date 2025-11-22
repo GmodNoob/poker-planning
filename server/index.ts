@@ -1,24 +1,14 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { streamSSE } from "hono/streaming";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { serve } from "@hono/node-server";
 import { existsSync } from "fs";
-import { getCookie, setCookie } from "hono/cookie";
 import { RoomStorage, type Room, type RoomState } from "./storage.js";
-import {
-  rateLimiter,
-  bodySizeLimiter,
-  securityHeaders,
-  isValidVote,
-  isValidName,
-  isValidRoomCode,
-} from "./security.js";
+import { securityHeaders } from "./security.js";
 import { createOpenAPIApp } from "./openapi.js";
 
 // Constants
-const SESSION_DURATION = 2 * 60 * 60 * 1000; // 2 hours
 const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 const CLEANUP_INTERVAL = 60 * 1000; // 1 minute
 
