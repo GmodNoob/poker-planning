@@ -53,7 +53,7 @@ export default function () {
       // Vote
       http.post(
         `${BASE_URL}/api/rooms/${roomCode}/vote`,
-        JSON.stringify({ vote: "5" }),
+        JSON.stringify({ value: "5" }),
         {
           headers: {
             "Content-Type": "application/json",

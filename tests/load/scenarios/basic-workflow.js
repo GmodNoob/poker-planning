@@ -170,7 +170,7 @@ export default function () {
   const vote = randomVote();
   let voteRes = http.post(
     `${BASE_URL}/api/rooms/${roomCode}/vote`,
-    JSON.stringify({ vote }),
+    JSON.stringify({ value: vote }),
     {
       headers: {
         "Content-Type": "application/json",

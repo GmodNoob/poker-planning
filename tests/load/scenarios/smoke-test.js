@@ -62,7 +62,7 @@ export default function () {
       "room state retrieved": (r) => r.status === 200,
       "has members": (r) => {
         const room = JSON.parse(r.body);
-        return room.members && room.members.length > 0;
+        return room.memberCount > 0;
       },
     });
 
@@ -71,7 +71,7 @@ export default function () {
     // 4. Vote
     const voteRes = http.post(
       `${BASE_URL}/api/rooms/${roomCode}/vote`,
-      JSON.stringify({ vote: "5" }),
+      JSON.stringify({ value: "5" }),
       {
         headers: {
           "Content-Type": "application/json",
@@ -100,7 +100,7 @@ export default function () {
 
     check(revealRes, {
       "votes revealed": (r) => r.status === 200,
-      "revealed flag set": (r) => JSON.parse(r.body).revealed === true,
+      "reveal success": (r) => JSON.parse(r.body).success === true,
     });
 
     sleep(1);
@@ -119,16 +119,13 @@ export default function () {
 
     check(resetRes, {
       "room reset": (r) => r.status === 200,
-      "votes cleared": (r) => {
-        const room = JSON.parse(r.body);
-        return room.revealed === false;
-      },
+      "reset success": (r) => JSON.parse(r.body).success === true,
     });
 
     sleep(1);
 
     // 7. Remove member
-    const memberId = JSON.parse(joinRes.body).member.id;
+    const memberId = JSON.parse(joinRes.body).memberId;
     const removeRes = http.del(
       `${BASE_URL}/api/rooms/${roomCode}/members/${memberId}`,
       null,
