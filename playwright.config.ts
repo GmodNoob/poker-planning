@@ -25,7 +25,8 @@ export default defineConfig({
 
   webServer: [
     {
-      command: "REDIS_URL=redis://localhost:6379 pnpm run dev:server",
+      command:
+        "NODE_ENV=test REDIS_URL=redis://localhost:6379 pnpm run dev:server",
       url: "http://localhost:3001/api/health",
       timeout: 120000,
       reuseExistingServer: !process.env.CI,

@@ -70,8 +70,10 @@ setInterval(cleanup, CLEANUP_INTERVAL);
 
 const app = new Hono();
 
-// HTTP logger
-app.use("*", logger());
+// HTTP logger (disabled in test environment)
+if (process.env.NODE_ENV !== "test") {
+  app.use("*", logger());
+}
 
 // Security headers
 app.use("/*", securityHeaders);
