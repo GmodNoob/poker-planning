@@ -119,6 +119,8 @@ export default function Room() {
   const previousShowResults = useRef(false);
   const [announcement, setAnnouncement] = useState<string>("");
   const votingGroupRef = useRef<HTMLUListElement>(null);
+  const [revealCountdown, setRevealCountdown] = useState<number | null>(null);
+  const countdownTimerRef = useRef<number | null>(null);
 
   // Find current member's vote from roomState
   const members = roomState?.members || [];
@@ -170,6 +172,45 @@ export default function Room() {
     previousShowResults.current = roomState.showResults;
   }, [roomState, fireConfetti]);
 
+  // Countdown timer effect
+  useEffect(() => {
+    if (revealCountdown === null) return;
+
+    if (revealCountdown === 0) {
+      reveal();
+      setRevealCountdown(null);
+      countdownTimerRef.current = null;
+      setAnnouncement("Revealing votes now");
+      return;
+    }
+
+    // Announce countdown for screen readers
+    if (revealCountdown < 3) {
+      setAnnouncement(`${revealCountdown}`);
+    }
+
+    countdownTimerRef.current = window.setTimeout(() => {
+      setRevealCountdown((prev) => (prev !== null ? prev - 1 : null));
+    }, 1000);
+
+    return () => {
+      if (countdownTimerRef.current !== null) {
+        clearTimeout(countdownTimerRef.current);
+      }
+    };
+  }, [revealCountdown, reveal]);
+
+  // Clean up countdown on unmount or when votes are revealed
+  useEffect(() => {
+    if (roomState?.showResults && revealCountdown !== null) {
+      setRevealCountdown(null);
+      if (countdownTimerRef.current !== null) {
+        clearTimeout(countdownTimerRef.current);
+        countdownTimerRef.current = null;
+      }
+    }
+  }, [roomState?.showResults, revealCountdown]);
+
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
@@ -201,6 +242,20 @@ export default function Room() {
     await navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const startRevealCountdown = () => {
+    setRevealCountdown(3);
+    setAnnouncement("Revealing votes in 3 seconds");
+  };
+
+  const cancelRevealCountdown = () => {
+    setRevealCountdown(null);
+    if (countdownTimerRef.current !== null) {
+      clearTimeout(countdownTimerRef.current);
+      countdownTimerRef.current = null;
+    }
+    setAnnouncement("Countdown cancelled");
   };
 
   // Keyboard shortcuts - must be called before any early returns
@@ -451,21 +506,51 @@ export default function Room() {
               aria-label="Voting actions"
               className="flex justify-center gap-4 mb-4"
             >
-              <button
-                onClick={reveal}
-                disabled={showResults || votedCount === 0}
-                aria-disabled={showResults || votedCount === 0}
-                className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-lg transition-colors focus:outline-none focus:ring-4 focus:ring-green-400/50"
-              >
-                Reveal Votes ({votedCount}/{members.length})
-              </button>
-              <button
-                onClick={reset}
-                aria-label="Reset voting round"
-                className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors focus:outline-none focus:ring-4 focus:ring-gray-400/50"
-              >
-                Reset
-              </button>
+              {revealCountdown !== null ? (
+                <>
+                  <button
+                    disabled
+                    className="bg-green-600 text-white font-semibold py-2 px-6 rounded-lg cursor-default flex items-center gap-2 focus:outline-none focus:ring-4 focus:ring-green-400/50"
+                  >
+                    <span>Revealing in</span>
+                    <span className="text-2xl font-bold tabular-nums">
+                      {revealCountdown}
+                    </span>
+                  </button>
+                  <button
+                    onClick={cancelRevealCountdown}
+                    className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors focus:outline-none focus:ring-4 focus:ring-red-400/50"
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={reveal}
+                    disabled={showResults || votedCount === 0}
+                    aria-disabled={showResults || votedCount === 0}
+                    className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-lg transition-colors focus:outline-none focus:ring-4 focus:ring-green-400/50"
+                  >
+                    Reveal Votes ({votedCount}/{members.length})
+                  </button>
+                  <button
+                    onClick={startRevealCountdown}
+                    disabled={showResults || votedCount === 0}
+                    aria-disabled={showResults || votedCount === 0}
+                    className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-lg transition-colors focus:outline-none focus:ring-4 focus:ring-green-400/50"
+                  >
+                    Reveal in 3s
+                  </button>
+                  <button
+                    onClick={reset}
+                    aria-label="Reset voting round"
+                    className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors focus:outline-none focus:ring-4 focus:ring-gray-400/50"
+                  >
+                    Reset
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Statistics */}
@@ -587,7 +672,7 @@ export default function Room() {
             <span className="mx-2" aria-hidden="true">
               ·
             </span>
-            <span>v2.6.1</span>
+            <span>v2.7.0</span>
           </footer>
         </div>
       </main>
