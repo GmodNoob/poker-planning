@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "@tanstack/react-router";
 import { useRoom } from "../hooks/useRoom";
 import { useConfetti } from "../hooks/useConfetti";
@@ -21,8 +21,16 @@ function MemberCard({
   const hasVoted = member.vote !== null;
   const displayValue = isRevealed ? member.vote : hasVoted ? "?" : "-";
 
+  const voteStatus = hasVoted
+    ? isRevealed
+      ? `voted ${member.vote}`
+      : "has voted"
+    : "hasn't voted yet";
+
   return (
     <div
+      role="article"
+      aria-label={`${member.name}${isCurrentUser ? " (you)" : ""}, ${voteStatus}`}
       className={`
       group relative bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center
       transition-all duration-200 hover:bg-white/15
@@ -33,7 +41,8 @@ function MemberCard({
       {!isCurrentUser && (
         <button
           onClick={() => onRemove(member.id)}
-          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500/80 hover:bg-red-500 rounded-full text-white text-sm flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 shadow-lg"
+          aria-label={`Remove ${member.name} from room`}
+          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500/80 hover:bg-red-500 rounded-full text-white text-sm flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 shadow-lg focus:outline-none focus:ring-2 focus:ring-red-400"
           title="Remove member"
         >
           <svg
@@ -41,6 +50,7 @@ function MemberCard({
             className="h-3.5 w-3.5"
             viewBox="0 0 20 20"
             fill="currentColor"
+            aria-hidden="true"
           >
             <path
               fillRule="evenodd"
@@ -53,6 +63,7 @@ function MemberCard({
 
       {/* Vote display */}
       <div
+        aria-hidden="true"
         className={`
         text-3xl font-bold mb-2 h-10 flex items-center justify-center
         ${hasVoted ? "text-white" : "text-white/30"}
@@ -72,6 +83,7 @@ function MemberCard({
 
       {/* Vote indicator */}
       <div
+        aria-hidden="true"
         className={`
         mt-2 h-1 rounded-full transition-all duration-300
         ${hasVoted ? "bg-green-400/60" : "bg-white/10"}
@@ -105,12 +117,21 @@ export default function Room() {
   );
   const [copied, setCopied] = useState(false);
   const previousShowResults = useRef(false);
+  const [announcement, setAnnouncement] = useState<string>("");
+  const votingGroupRef = useRef<HTMLUListElement>(null);
 
   // Find current member's vote from roomState
   const members = roomState?.members || [];
   const currentMemberId = roomInfo?.currentMember?.id;
   const myVote = members.find((m) => m.id === currentMemberId)?.vote;
   const votedCount = members.filter((m) => m.vote !== null).length;
+
+  // Focus management for voting buttons
+  const getVotingButton = useCallback((index: number) => {
+    return votingGroupRef.current?.children[index]?.querySelector(
+      "button",
+    ) as HTMLButtonElement | null;
+  }, []);
 
   // Sync selected value with server state
   useEffect(() => {
@@ -132,8 +153,19 @@ export default function Room() {
     const hasConsensus =
       votes.length >= 2 && votes.every((v) => v === votes[0]);
 
-    if (roomState.showResults && !previousShowResults.current && hasConsensus) {
-      fireConfetti();
+    if (roomState.showResults && !previousShowResults.current) {
+      if (hasConsensus) {
+        fireConfetti();
+        setAnnouncement(
+          `Consensus reached! Everyone voted ${votes[0]}. ${votes.length} members voted.`,
+        );
+      } else {
+        setAnnouncement(
+          `Votes revealed. ${votes.length} members voted. Average: ${(votes.filter((v): v is number => typeof v === "number").reduce((a, b) => a + b, 0) / votes.filter((v): v is number => typeof v === "number").length).toFixed(1)}`,
+        );
+      }
+    } else if (!roomState.showResults && previousShowResults.current) {
+      setAnnouncement("Voting round reset. Please submit your votes.");
     }
     previousShowResults.current = roomState.showResults;
   }, [roomState, fireConfetti]);
@@ -161,6 +193,7 @@ export default function Room() {
     const newValue = selectedValue === value ? null : value;
     setSelectedValue(newValue);
     await vote(newValue);
+    setAnnouncement(newValue === null ? "Vote removed" : `Voted ${newValue}`);
   };
 
   const handleCopyUrl = async () => {
@@ -248,199 +281,306 @@ export default function Room() {
       : 0;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <div className="container mx-auto px-4 py-4">
-        {/* Header */}
-        <header className="text-center mb-4">
-          <h1 className="text-2xl font-bold text-white mb-1">Poker Planning</h1>
-          <div className="flex items-center justify-center gap-4">
-            <p className="text-sm text-purple-200">
-              Room: <span className="font-mono font-bold">{code}</span>
-            </p>
-            <button
-              onClick={handleCopyUrl}
-              className="text-xs bg-purple-600/50 hover:bg-purple-600 text-white px-3 py-1 rounded transition-colors"
+    <>
+      {/* Skip links */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-purple-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:ring-4 focus:ring-purple-400"
+      >
+        Skip to main content
+      </a>
+      <a
+        href="#voting"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-40 focus:z-50 focus:bg-purple-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:ring-4 focus:ring-purple-400"
+      >
+        Skip to voting
+      </a>
+
+      <main
+        id="main-content"
+        className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col"
+      >
+        <div className="container mx-auto px-4 py-4 flex-1 flex flex-col">
+          {/* Live region for screen reader announcements */}
+          <div
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            className="sr-only"
+          >
+            {announcement}
+          </div>
+
+          {/* Header */}
+          <header className="text-center mb-4">
+            <h1 className="text-2xl font-bold text-white mb-1">
+              Poker Planning
+            </h1>
+            <div className="flex items-center justify-center gap-4">
+              <p className="text-sm text-purple-200">
+                Room: <span className="font-mono font-bold">{code}</span>
+              </p>
+              <button
+                onClick={handleCopyUrl}
+                aria-label={
+                  copied
+                    ? "Room URL copied to clipboard"
+                    : "Copy room URL to clipboard"
+                }
+                className="text-xs bg-purple-600/50 hover:bg-purple-600 text-white px-3 py-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400"
+              >
+                {copied ? "Copied!" : "Copy URL"}
+              </button>
+            </div>
+            {!isConnected && (
+              <p role="alert" className="text-xs text-yellow-400 mt-1">
+                Reconnecting...
+              </p>
+            )}
+          </header>
+
+          {/* Team members */}
+          <section aria-label="Team members">
+            <h2 className="sr-only">Team members and their votes</h2>
+            <div
+              role="list"
+              aria-label={`${members.length} team members, ${votedCount} have voted`}
+              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-6"
             >
-              {copied ? "Copied!" : "Copy URL"}
+              {members.map((member) => (
+                <div key={member.id} role="listitem">
+                  <MemberCard
+                    member={member}
+                    isCurrentUser={member.id === currentMember.id}
+                    isRevealed={showResults}
+                    onRemove={removeMember}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Voting cards */}
+          <section id="voting" aria-labelledby="voting-label" className="mb-6">
+            <h3
+              id="voting-label"
+              className="text-sm font-medium text-purple-200 mb-3 text-center"
+            >
+              Your vote:
+            </h3>
+            <ul
+              ref={votingGroupRef}
+              role="radiogroup"
+              aria-labelledby="voting-label"
+              aria-required="false"
+              aria-disabled={showResults}
+              className="flex flex-wrap gap-3 justify-center list-none p-0 m-0"
+            >
+              {FIBONACCI_VALUES.map((value, index) => {
+                const isSelected = selectedValue === value;
+                const shouldHaveTabIndex =
+                  isSelected || (selectedValue === null && index === 0);
+
+                return (
+                  <li key={value} className="list-none">
+                    <button
+                      role="radio"
+                      aria-checked={isSelected}
+                      aria-label={`Vote ${value}`}
+                      onClick={() => handleVote(value)}
+                      disabled={showResults}
+                      tabIndex={shouldHaveTabIndex ? 0 : -1}
+                      onKeyDown={(e) => {
+                        // Arrow navigation
+                        if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                          const nextIndex =
+                            (index + 1) % FIBONACCI_VALUES.length;
+                          getVotingButton(nextIndex)?.focus();
+                        } else if (
+                          e.key === "ArrowLeft" ||
+                          e.key === "ArrowUp"
+                        ) {
+                          e.preventDefault();
+                          const prevIndex =
+                            (index - 1 + FIBONACCI_VALUES.length) %
+                            FIBONACCI_VALUES.length;
+                          getVotingButton(prevIndex)?.focus();
+                        } else if (e.key === " " || e.key === "Enter") {
+                          e.preventDefault();
+                          handleVote(value);
+                        } else if (e.key === "Home") {
+                          e.preventDefault();
+                          getVotingButton(0)?.focus();
+                        } else if (e.key === "End") {
+                          e.preventDefault();
+                          getVotingButton(FIBONACCI_VALUES.length - 1)?.focus();
+                        }
+                      }}
+                      className={`
+                      w-16 h-24 sm:w-20 sm:h-28 rounded-xl font-bold text-2xl sm:text-3xl transition-all
+                      border-2 shadow-md
+                      focus:outline-none focus:ring-4 focus:ring-purple-400/50 focus:ring-offset-2 focus:ring-offset-slate-900
+                      ${
+                        isSelected
+                          ? "bg-purple-500 text-white scale-105 shadow-xl shadow-purple-500/30 border-purple-400"
+                          : "bg-white/10 text-white hover:bg-white/20 border-white/20 hover:border-white/40"
+                      }
+                      ${showResults ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:scale-105"}
+                    `}
+                    >
+                      {value}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+
+          {/* Actions */}
+          <div
+            role="group"
+            aria-label="Voting actions"
+            className="flex justify-center gap-4 mb-4"
+          >
+            <button
+              onClick={reveal}
+              disabled={showResults || votedCount === 0}
+              aria-label={`Reveal votes. ${votedCount} out of ${members.length} members have voted`}
+              aria-disabled={showResults || votedCount === 0}
+              className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-lg transition-colors focus:outline-none focus:ring-4 focus:ring-green-400/50"
+            >
+              Reveal Votes ({votedCount}/{members.length})
+            </button>
+            <button
+              onClick={reset}
+              aria-label="Reset voting round"
+              className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors focus:outline-none focus:ring-4 focus:ring-gray-400/50"
+            >
+              Reset
             </button>
           </div>
-          {!isConnected && (
-            <p className="text-xs text-yellow-400 mt-1">Reconnecting...</p>
-          )}
-        </header>
 
-        {/* Team members */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-6">
-          {members.map((member) => (
-            <MemberCard
-              key={member.id}
-              member={member}
-              isCurrentUser={member.id === currentMember.id}
-              isRevealed={showResults}
-              onRemove={removeMember}
-            />
-          ))}
-        </div>
-
-        {/* Voting cards */}
-        <div className="mb-6">
-          <h3 className="text-sm font-medium text-purple-200 mb-3 text-center">
-            Your vote:
-          </h3>
-          <div className="flex flex-wrap gap-3 justify-center">
-            {FIBONACCI_VALUES.map((value) => (
-              <button
-                key={value}
-                onClick={() => handleVote(value)}
-                disabled={showResults}
-                className={`
-                  w-16 h-24 sm:w-20 sm:h-28 rounded-xl font-bold text-2xl sm:text-3xl transition-all
-                  border-2 shadow-md
-                  ${
-                    selectedValue === value
-                      ? "bg-purple-500 text-white scale-105 shadow-xl shadow-purple-500/30 border-purple-400"
-                      : "bg-white/10 text-white hover:bg-white/20 border-white/20 hover:border-white/40"
-                  }
-                  ${showResults ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:scale-105"}
-                `}
-              >
-                {value}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-center gap-4 mb-4">
-          <button
-            onClick={reveal}
-            disabled={showResults || votedCount === 0}
-            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-lg transition-colors"
-          >
-            Reveal Votes ({votedCount}/{members.length})
-          </button>
-          <button
-            onClick={reset}
-            className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
-          >
-            Reset
-          </button>
-        </div>
-
-        {/* Statistics */}
-        {showResults && members.length > 0 && (
-          <div className="bg-white/5 rounded-xl p-4 mb-4">
-            {/* Average */}
-            {numericVotes.length > 0 && (
-              <div className="text-center mb-4">
-                <p className="text-purple-200">
-                  Average:{" "}
-                  <span className="font-bold text-white text-2xl">
-                    {average.toFixed(1)}
-                  </span>
-                </p>
-              </div>
-            )}
-
-            {/* Vote distribution bar chart */}
-            {(() => {
-              // Count votes by value
-              const voteCounts = new Map<string | number, number>();
-              members.forEach((m) => {
-                if (m.vote !== null && m.vote !== "hidden") {
-                  const count = voteCounts.get(m.vote) || 0;
-                  voteCounts.set(m.vote, count + 1);
-                }
-              });
-
-              // Don't show if less than 3 voters or everyone voted the same
-              const totalVoters = Array.from(voteCounts.values()).reduce(
-                (a, b) => a + b,
-                0,
-              );
-              if (
-                voteCounts.size === 0 ||
-                totalVoters < 3 ||
-                voteCounts.size === 1
-              )
-                return null;
-
-              const maxCount = Math.max(...voteCounts.values());
-              const sortedVotes = Array.from(voteCounts.entries()).sort(
-                (a, b) => {
-                  // Sort by value (numbers first, then strings)
-                  const aNum = typeof a[0] === "number" ? a[0] : Infinity;
-                  const bNum = typeof b[0] === "number" ? b[0] : Infinity;
-                  return aNum - bNum;
-                },
-              );
-
-              return (
-                <div className="space-y-2 mt-6">
-                  <h4 className="text-xs font-medium text-purple-300 text-center mb-4">
-                    Vote Distribution
-                  </h4>
-                  <div className="flex items-end justify-center gap-3 px-4">
-                    {sortedVotes.map(([value, count]) => {
-                      const heightPx = (count / maxCount) * 120; // Max height 120px
-                      return (
-                        <div
-                          key={value}
-                          className="flex flex-col items-center gap-1.5 min-w-[48px]"
-                        >
-                          <span className="text-xs font-semibold text-purple-200 mb-1">
-                            {count}
-                          </span>
-                          <div
-                            className="w-12 bg-gradient-to-t from-purple-600 to-purple-400 rounded-t-lg transition-all duration-500 shadow-lg"
-                            style={{ height: `${Math.max(heightPx, 12)}px` }}
-                          />
-                          <span className="text-base font-bold text-white mt-1">
-                            {value}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
+          {/* Statistics */}
+          {showResults && members.length > 0 && (
+            <section
+              aria-label="Voting statistics"
+              className="bg-white/5 rounded-xl p-4 mb-4"
+            >
+              {/* Average */}
+              {numericVotes.length > 0 && (
+                <div className="text-center mb-4">
+                  <p className="text-purple-200">
+                    Average:{" "}
+                    <span className="font-bold text-white text-2xl">
+                      {average.toFixed(1)}
+                    </span>
+                  </p>
                 </div>
-              );
-            })()}
+              )}
+
+              {/* Vote distribution bar chart */}
+              {(() => {
+                // Count votes by value
+                const voteCounts = new Map<string | number, number>();
+                members.forEach((m) => {
+                  if (m.vote !== null && m.vote !== "hidden") {
+                    const count = voteCounts.get(m.vote) || 0;
+                    voteCounts.set(m.vote, count + 1);
+                  }
+                });
+
+                // Don't show if less than 3 voters or everyone voted the same
+                const totalVoters = Array.from(voteCounts.values()).reduce(
+                  (a, b) => a + b,
+                  0,
+                );
+                if (
+                  voteCounts.size === 0 ||
+                  totalVoters < 3 ||
+                  voteCounts.size === 1
+                )
+                  return null;
+
+                const maxCount = Math.max(...voteCounts.values());
+                const sortedVotes = Array.from(voteCounts.entries()).sort(
+                  (a, b) => {
+                    // Sort by value (numbers first, then strings)
+                    const aNum = typeof a[0] === "number" ? a[0] : Infinity;
+                    const bNum = typeof b[0] === "number" ? b[0] : Infinity;
+                    return aNum - bNum;
+                  },
+                );
+
+                return (
+                  <div className="space-y-2 mt-6">
+                    <h4 className="text-xs font-medium text-purple-300 text-center mb-4">
+                      Vote Distribution
+                    </h4>
+                    <div className="flex items-end justify-center gap-3 px-4">
+                      {sortedVotes.map(([value, count]) => {
+                        const heightPx = (count / maxCount) * 120; // Max height 120px
+                        return (
+                          <div
+                            key={value}
+                            className="flex flex-col items-center gap-1.5 min-w-[48px]"
+                          >
+                            <span className="text-xs font-semibold text-purple-200 mb-1">
+                              {count}
+                            </span>
+                            <div
+                              className="w-12 bg-gradient-to-t from-purple-600 to-purple-400 rounded-t-lg transition-all duration-500 shadow-lg"
+                              style={{ height: `${Math.max(heightPx, 12)}px` }}
+                            />
+                            <span className="text-base font-bold text-white mt-1">
+                              {value}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+            </section>
+          )}
+
+          {/* Keyboard shortcuts hint */}
+          <div className="text-center mt-6 text-xs text-purple-300/60">
+            <div className="inline-flex items-center gap-4 flex-wrap justify-center">
+              <span>
+                <kbd className="px-2 py-1 bg-white/10 rounded">1-9</kbd> Vote
+              </span>
+              <span>
+                <kbd className="px-2 py-1 bg-white/10 rounded">V</kbd> Reveal
+              </span>
+              <span>
+                <kbd className="px-2 py-1 bg-white/10 rounded">R</kbd> Reset
+              </span>
+            </div>
           </div>
-        )}
 
-        {/* Keyboard shortcuts hint */}
-        <div className="text-center mt-6 text-xs text-purple-300/60">
-          <div className="inline-flex items-center gap-4 flex-wrap justify-center">
-            <span>
-              <kbd className="px-2 py-1 bg-white/10 rounded">1-9</kbd> Vote
-            </span>
-            <span>
-              <kbd className="px-2 py-1 bg-white/10 rounded">V</kbd> Reveal
-            </span>
-            <span>
-              <kbd className="px-2 py-1 bg-white/10 rounded">R</kbd> Reset
-            </span>
+          {/* Current user info */}
+          <div className="text-center mt-4 text-xs text-purple-300/50">
+            Logged in as: {currentMember.name}
           </div>
-        </div>
 
-        {/* Current user info */}
-        <div className="text-center mt-4 text-xs text-purple-300/50">
-          Logged in as: {currentMember.name}
+          <footer className="mt-auto pt-8 text-center text-xs text-purple-300/40">
+            <a
+              href="https://github.com/Slashgear/poker-planning"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-purple-300/70 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400 focus:rounded"
+            >
+              GitHub
+            </a>
+            <span className="mx-2" aria-hidden="true">
+              ·
+            </span>
+            <span>v2.5.0</span>
+          </footer>
         </div>
-
-        <footer className="mt-8 text-center text-xs text-purple-300/40">
-          <a
-            href="https://github.com/Slashgear/poker-planning"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-purple-300/70 transition-colors"
-          >
-            GitHub
-          </a>
-          <span className="mx-2">·</span>
-          <span>v2.5.0</span>
-        </footer>
-      </div>
-    </main>
+      </main>
+    </>
   );
 }
