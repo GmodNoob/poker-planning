@@ -10,6 +10,9 @@ describe("isValidVote", () => {
     expect(isValidVote(8)).toBe(true);
     expect(isValidVote(13)).toBe(true);
     expect(isValidVote(21)).toBe(true);
+    expect(isValidVote(34)).toBe(true);
+    expect(isValidVote(55)).toBe(true);
+    expect(isValidVote(89)).toBe(true);
   });
 
   it("accepts special values", () => {

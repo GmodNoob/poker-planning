@@ -65,11 +65,11 @@ const _RoomStateSchema = z
 
 const VoteValueSchema = z
   .union([
-    z.enum(["1", "2", "3", "5", "8", "13", "21", "34", "55"]),
+    z.enum(["1", "2", "3", "5", "8", "13", "21", "34", "55", "89"]),
     z
       .number()
       .int()
-      .refine((v) => [1, 2, 3, 5, 8, 13, 21, 34, 55].includes(v)),
+      .refine((v) => [1, 2, 3, 5, 8, 13, 21, 34, 55, 89].includes(v)),
     z.enum(["?", "☕"]),
     z.null(),
   ])

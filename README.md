@@ -43,8 +43,9 @@ Celebrate when everyone agrees!
 - **Dynamic rooms** with shareable 6-character codes
 - **Real-time synchronization** with SSE (Server-Sent Events)
 - **Anonymous votes** until collective reveal
-- **Fibonacci sequence** for estimation (1, 2, 3, 5, 8, 13, 21, ?, coffee)
-- **Automatic statistics** (average)
+- **Fibonacci sequence** for estimation (1, 2, 3, 5, 8, 13, 21, 34, 55, 89, ?, ☕)
+- **Keyboard shortcuts** for quick voting (1-9 keys for first 9 values)
+- **Automatic statistics** (average, vote distribution)
 - **Confetti celebration** when all votes match
 - **Session persistence** via httpOnly cookies (2 hours)
 - **Auto-cleanup** of inactive members (5 minutes)

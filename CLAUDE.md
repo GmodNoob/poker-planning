@@ -69,8 +69,13 @@ docker-compose up -d --build  # Build and run full stack (port 3001)
 - Votes hidden until reveal (displayed as '?' or '-')
 - Confetti animation on consensus (all votes match)
 - Cookie-based session for seamless reconnection
+- Voting values:
+  - Fibonacci sequence: 1, 2, 3, 5, 8, 13, 21, 34, 55, 89
+  - Special values: '?' (unsure), '☕' (coffee break)
+  - All values validated server-side in `server/security.ts` and `server/openapi.ts`
 - Keyboard shortcuts for enhanced UX:
-  - `1-9`: Vote for Fibonacci values (1, 2, 3, 5, 8, 13, 21, 34, 55)
+  - `1-9`: Vote for first 9 Fibonacci values (1, 2, 3, 5, 8, 13, 21, 34, 55)
+  - Note: 89 is available via UI button only (no keyboard shortcut)
   - `V`: Reveal votes (when votes available)
   - `R`: Reset round
   - Shortcuts disabled when typing in input fields

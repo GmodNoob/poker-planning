@@ -2,7 +2,7 @@ import { getRedisClient } from "./redis.js";
 import type { Context, Next } from "hono";
 
 // Valid vote values for Fibonacci sequence
-const VALID_VOTES = [1, 2, 3, 5, 8, 13, 21, "?", "☕"];
+const VALID_VOTES = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, "?", "☕"];
 
 // Validation functions
 export function isValidVote(value: unknown): boolean {
