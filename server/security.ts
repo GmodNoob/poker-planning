@@ -77,9 +77,12 @@ export async function securityHeaders(c: Context, next: Next) {
   c.header("Referrer-Policy", "strict-origin-when-cross-origin");
   c.header("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
 
-  // Content Security Policy (production only)
+  // Skip CSP for Swagger UI docs page (needs inline scripts and styles)
+  const isDocsPage = c.req.path === "/api/docs";
+
+  // Content Security Policy (production only, except for docs page)
   const isProduction = process.env.NODE_ENV === "production";
-  if (isProduction) {
+  if (isProduction && !isDocsPage) {
     const csp = [
       "default-src 'self'",
       "script-src 'self'",

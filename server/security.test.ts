@@ -1,5 +1,11 @@
-import { describe, it, expect } from "vitest";
-import { isValidVote, isValidName, isValidRoomCode } from "./security.js";
+import { describe, it, expect, vi } from "vitest";
+import {
+  isValidVote,
+  isValidName,
+  isValidRoomCode,
+  securityHeaders,
+} from "./security.js";
+import type { Context } from "hono";
 
 describe("isValidVote", () => {
   it("accepts valid Fibonacci values", () => {
@@ -83,5 +89,82 @@ describe("isValidRoomCode", () => {
     expect(isValidRoomCode(null)).toBe(false);
     expect(isValidRoomCode(undefined)).toBe(false);
     expect(isValidRoomCode(123456)).toBe(false);
+  });
+});
+
+describe("securityHeaders", () => {
+  it("skips CSP header for /api/docs path", async () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+
+    const headers = new Map<string, string>();
+    const mockContext = {
+      req: {
+        path: "/api/docs",
+      },
+      header: (key: string, value: string) => {
+        headers.set(key, value);
+      },
+    } as unknown as Context;
+
+    const mockNext = vi.fn(async () => {});
+
+    await securityHeaders(mockContext, mockNext);
+
+    expect(mockNext).toHaveBeenCalled();
+    expect(headers.has("Content-Security-Policy")).toBe(false);
+    expect(headers.has("X-Frame-Options")).toBe(true);
+
+    process.env.NODE_ENV = originalEnv;
+  });
+
+  it("applies CSP header for other paths in production", async () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+
+    const headers = new Map<string, string>();
+    const mockContext = {
+      req: {
+        path: "/api/rooms",
+      },
+      header: (key: string, value: string) => {
+        headers.set(key, value);
+      },
+    } as unknown as Context;
+
+    const mockNext = vi.fn(async () => {});
+
+    await securityHeaders(mockContext, mockNext);
+
+    expect(mockNext).toHaveBeenCalled();
+    expect(headers.has("Content-Security-Policy")).toBe(true);
+    expect(headers.get("Content-Security-Policy")).toContain("default-src");
+
+    process.env.NODE_ENV = originalEnv;
+  });
+
+  it("does not apply CSP in non-production environment", async () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "development";
+
+    const headers = new Map<string, string>();
+    const mockContext = {
+      req: {
+        path: "/api/rooms",
+      },
+      header: (key: string, value: string) => {
+        headers.set(key, value);
+      },
+    } as unknown as Context;
+
+    const mockNext = vi.fn(async () => {});
+
+    await securityHeaders(mockContext, mockNext);
+
+    expect(mockNext).toHaveBeenCalled();
+    expect(headers.has("Content-Security-Policy")).toBe(false);
+    expect(headers.has("X-Frame-Options")).toBe(true);
+
+    process.env.NODE_ENV = originalEnv;
   });
 });
