@@ -156,9 +156,12 @@ describe("RoomStorage", () => {
       expect(updated?.members.has("inactive")).toBe(false);
     });
 
-    it("deletes rooms with no active members", async () => {
+    it("deletes rooms with no active members (after grace period)", async () => {
       const room = await storage.createRoom("ABC123");
       const now = Date.now();
+
+      // Set room creation time to be older than grace period (6 minutes ago)
+      room.createdAt = now - 6 * 60 * 1000;
 
       room.members.set("inactive1", {
         id: "inactive1",
@@ -178,6 +181,31 @@ describe("RoomStorage", () => {
 
       const deleted = await storage.getRoom("ABC123");
       expect(deleted).toBeNull();
+    });
+
+    it("does NOT delete empty rooms within grace period", async () => {
+      const room = await storage.createRoom("ABC123");
+      const now = Date.now();
+
+      // Room created recently (within grace period)
+      room.createdAt = now - 2 * 60 * 1000; // 2 minutes ago
+
+      // Add and then remove all members to make room empty
+      room.members.set("user1", {
+        id: "user1",
+        name: "User 1",
+        vote: null,
+        lastActivity: now - 10 * 60 * 1000, // Inactive
+      });
+
+      await storage.updateRoom(room);
+      await storage.cleanupInactiveMembers(5 * 60 * 1000);
+
+      // Room should still exist because it's within grace period
+      const stillExists = await storage.getRoom("ABC123");
+      expect(stillExists).not.toBeNull();
+      expect(stillExists?.code).toBe("ABC123");
+      expect(stillExists?.members.size).toBe(0); // Members removed but room kept
     });
 
     it("does not remove active members", async () => {
@@ -211,8 +239,9 @@ describe("RoomStorage", () => {
       });
       await storage.updateRoom(room1);
 
-      // Room 2 - all inactive
+      // Room 2 - all inactive, created 6 minutes ago (past grace period)
       const room2 = await storage.createRoom("ROOM002");
+      room2.createdAt = now - 6 * 60 * 1000; // 6 minutes ago
       room2.members.set("inactive", {
         id: "inactive",
         name: "Inactive",

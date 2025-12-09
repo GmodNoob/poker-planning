@@ -29,6 +29,7 @@ export interface RoomState {
 // Constants
 const ROOM_TTL = 2 * 60 * 60; // 2 hours in seconds
 const ROOM_KEY_PREFIX = "room:";
+const EMPTY_ROOM_GRACE_PERIOD = 5 * 60 * 1000; // 5 minutes - grace period before deleting empty rooms
 
 // Serialize room to JSON (convert Map to array)
 function serializeRoom(room: Room): string {
@@ -127,9 +128,17 @@ export class RoomStorage {
         }
       }
 
-      // Delete room if empty, otherwise update
+      // Delete room if empty AND past grace period, otherwise update
       if (room.members.size === 0) {
-        await this.redis.del(key);
+        const roomAge = now - room.createdAt;
+        // Only delete empty rooms that are older than the grace period
+        // This prevents race condition where room is deleted before first member joins
+        if (roomAge > EMPTY_ROOM_GRACE_PERIOD) {
+          await this.redis.del(key);
+        } else if (modified) {
+          // Room is empty but within grace period - update to persist member removals
+          await this.updateRoom(room);
+        }
       } else if (modified) {
         await this.updateRoom(room);
       }
